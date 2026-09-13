@@ -7,8 +7,8 @@ import '@fontsource/barlow-condensed/700.css';
 import '@fontsource/anton/400.css';
 import '@fontsource/inter/400.css';
 import '@fontsource/inter/500.css';
-import { sections, wrap, screenFromHash, screenHash } from './navigation.mjs';
-import { descriptions, subtitles, projects, abilities } from './content';
+import { sections, wrap, screenFromHash, screenHash, WELCOME, readSavedScreen, saveScreen } from './navigation.mjs';
+import { descriptions, subtitles, projects, abilities, experienceDrafts } from './content';
 import './style.css';
 
 function App() {
@@ -18,6 +18,9 @@ function App() {
   const [busy, setBusy] = useState(false);
   const [reduced, setReduced] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [project, setProject] = useState<number | null>(null);
+  const [savedScreen, setSavedScreen] = useState<number | null>(() => readSavedScreen(undefined));
+  const [welcomeChoice, setWelcomeChoice] = useState(0);
+  const configDialog = useRef<HTMLDialogElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const scene = useRef<HTMLDivElement>(null);
   const wipe = useRef<HTMLDivElement>(null);
@@ -58,19 +61,33 @@ function App() {
       locked.current = false; setBusy(false);
       const pending = pendingHistory.current; pendingHistory.current = null;
       if (pending !== null && pending !== current.current) { navigateRef.current(pending, true); return; }
-      const target = screen < 0 ? menu.current?.querySelector<HTMLButtonElement>(`[data-index="${selection.current}"]`) : scene.current?.querySelector<HTMLElement>('h1');
+      const target = screen === WELCOME ? scene.current?.querySelector<HTMLButtonElement>('.welcome-button') : screen < 0 ? menu.current?.querySelector<HTMLButtonElement>(`[data-index="${selection.current}"]`) : scene.current?.querySelector<HTMLElement>('h1');
       target?.focus({ preventScroll: true });
     };
     const ctx = gsap.context(() => {
       gsap.set(scene.current, { x: 0, opacity: 1 });
       if (reduced) { gsap.set(wipe.current, { xPercent: 130 }); finish(); return; }
       const tl = gsap.timeline({ onComplete: finish }); entrance.current = tl;
-      tl.from('.screen-title', { x: -140, opacity: 0, duration: .7, ease: 'power4.out' }, .08)
-        .from('.reveal', { y: 35, x: 38, opacity: 0, duration: .55, stagger: .055, ease: 'power3.out' }, .16)
-        .from('.menu-button', { x: 180, opacity: 0, duration: .6, stagger: .045, ease: 'power4.out' }, .13);
+      if (screen === WELCOME) {
+        tl.from('.welcome-brand', { y: -40, opacity: 0, duration: 1.1, ease: 'power3.out' }, .15)
+          .from('.welcome-button', { x: 100, opacity: 0, duration: .7, stagger: .1, ease: 'power4.out' }, .4)
+          .from('.welcome-caption', { opacity: 0, duration: .7 }, .6);
+      } else {
+        tl.from('.screen-title', { x: -140, opacity: 0, duration: .7, ease: 'power4.out' }, .08)
+          .from('.reveal', { y: 35, x: 38, opacity: 0, duration: .55, stagger: .055, ease: 'power3.out' }, .16);
+        if (screen === -1) tl.from('.menu-button', { x: 180, opacity: 0, duration: .6, stagger: .045, ease: 'power4.out' }, .13);
+      }
+      if (screen === 1) {
+        tl.from('.journey-line', { scaleY: 0, transformOrigin: 'top', duration: .85, ease: 'power2.out' }, .25)
+          .from('.journey-step', { x: 45, opacity: 0, duration: .45, stagger: .12, ease: 'power3.out' }, .35);
+      }
     }, scene);
     return () => ctx.revert();
   }, [screen, reduced]);
+
+  useEffect(() => {
+    if (screen >= -1) { saveScreen(screen, undefined); setSavedScreen(screen); }
+  }, [screen]);
 
   useEffect(() => {
     const media = matchMedia('(prefers-reduced-motion: reduce)');
@@ -116,8 +133,19 @@ function App() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.altKey || e.ctrlKey || e.metaKey || dialog.current?.open || (e.target instanceof HTMLElement && e.target.closest('input,textarea,select,[contenteditable]'))) return;
+      if (e.altKey || e.ctrlKey || e.metaKey || dialog.current?.open || configDialog.current?.open || (e.target instanceof HTMLElement && e.target.closest('input,textarea,select,[contenteditable]'))) return;
       const key = e.key.toLowerCase();
+      if (current.current === WELCOME) {
+        if (['arrowdown', 's', 'arrowup', 'w'].includes(key)) {
+          e.preventDefault(); if (locked.current) return;
+          const buttons = Array.from(scene.current!.querySelectorAll<HTMLButtonElement>('.welcome-button:not(:disabled)'));
+          const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
+          buttons[(index + (['s','arrowdown'].includes(key) ? 1 : buttons.length - 1) + buttons.length) % buttons.length]?.focus();
+        }
+        if (key === 'enter' && !(e.target instanceof HTMLButtonElement)) { e.preventDefault(); navigateRef.current(-1); }
+        return;
+      }
+      if (key === 'escape' && current.current === -1) { e.preventDefault(); navigateRef.current(WELCOME); return; }
       if (key === 'escape' && current.current >= 0) { e.preventDefault(); navigateRef.current(-1); return; }
       if (current.current >= 0) return;
       if (['arrowdown', 's', 'arrowup', 'w'].includes(key)) {
@@ -139,12 +167,20 @@ function App() {
 
   const active = screen < 0 ? selected : screen;
   return <div className={`app ${reduced ? 'reduced-motion' : ''}`}>
-    <div className="stage" ref={stage} data-screen={screen < 0 ? 'menu' : 'section'}>
+    <div className="stage" ref={stage} data-screen={screen === WELCOME ? 'welcome' : screen < 0 ? 'menu' : screen === 1 ? 'experience' : 'section'}>
       <div className="environment" aria-hidden="true"><div className="city-parallax"><div className="city-drift"><img src="/assets/city.svg" className="city" alt="" /></div></div><div className="light-beam beam-one"/><div className="light-beam beam-two"/><div className="water-shimmer"/><div className="depth"/></div>
-      <header className="hud"><div className="status-box"><strong>{String(active+1).padStart(2,'0')} <span>/ 07</span></strong><small>PERSONAL PORTFOLIO</small></div><div className="top-quote">LIFE IS A SERIES OF CHOICES.<span>選択の先に、きっと何かがある。</span></div></header>
+      {screen !== WELCOME && <header className="hud"><div className="status-box"><strong>{String(active+1).padStart(2,'0')} <span>/ 07</span></strong><small>PERSONAL PORTFOLIO</small></div><div className="top-quote">LIFE IS A SERIES OF CHOICES.<span>選択の先に、きっと何かがある。</span></div></header>}
       <div className="scene" ref={scene} aria-busy={busy}>
-        <div className={`screen-title ${screen >= 0 ? 'section-giant' : ''}`} aria-hidden="true">{screen < 0 ? 'MENU' : sections[screen]}</div>
-        {screen < 0 ? <>
+        {screen !== WELCOME && <div className={`screen-title ${screen >= 0 ? 'section-giant' : ''}`} aria-hidden="true">{screen < 0 ? 'MENU' : sections[screen]}</div>}
+        {screen === WELCOME ? <main className="welcome-content">
+          <div className="welcome-brand"><div className="welcome-monogram" aria-hidden="true">LR<span>01</span></div><h1>LUCKY<br/><span>RAMADHAN</span></h1><div className="welcome-edition"><span>PERSONAL</span><strong>PORTFOLIO</strong></div><p>SOFTWARE DEVELOPER / A WORK IN PROGRESS</p></div>
+          <div className="welcome-caption"><span>YOUR NEXT CHAPTER STARTS HERE.</span><p>Every idea.<br/>A new possibility.</p><small>EXPLORE · BUILD · REPEAT</small></div>
+          <nav className="welcome-menu" aria-label="Welcome menu">
+            <button className={`welcome-button ${welcomeChoice === 0 ? 'active' : ''}`} onFocus={()=>setWelcomeChoice(0)} onPointerEnter={()=>setWelcomeChoice(0)} onClick={()=>navigate(-1)}><span>START</span><small>ENTER THE PORTFOLIO</small></button>
+            <button className={`welcome-button ${welcomeChoice === 1 ? 'active' : ''}`} disabled={savedScreen === null} onFocus={()=>setWelcomeChoice(1)} onPointerEnter={()=>{if(savedScreen !== null)setWelcomeChoice(1);}} onClick={()=>{if(savedScreen !== null)navigate(savedScreen);}}><span>CONTINUE</span><small>{savedScreen === null ? 'NO PREVIOUS VISIT' : `RESUME / ${savedScreen === -1 ? 'MAIN MENU' : sections[savedScreen]}`}</small></button>
+            <button className={`welcome-button ${welcomeChoice === 2 ? 'active' : ''}`} onFocus={()=>setWelcomeChoice(2)} onPointerEnter={()=>setWelcomeChoice(2)} onClick={()=>configDialog.current?.showModal()}><span>CONFIG</span><small>MAKE YOURSELF COMFORTABLE</small></button>
+          </nav>
+        </main> : screen < 0 ? <>
           <h1 className="sr-only">Lucky Ramadhan — Personal portfolio</h1>
           <nav className="main-menu" aria-label="Main menu" ref={menu}>
             <img ref={wedge} className="selection-wedge" src="/assets/selection.svg" alt="" aria-hidden="true"/>
@@ -160,7 +196,15 @@ function App() {
               <section className="reveal"><h3>WHAT DRIVES ME</h3><blockquote>“I believe technology can create opportunities, connect people, and solve real problems. I want to keep building, keep learning, and contribute to solutions that make a positive impact.”<cite>Lucky Ramadhan / draft copy</cite></blockquote></section>
               <div className="perspectives reveal">{[[5,'EXPLORE THE LAB'],[2,'VIEW PROJECTS'],[6,'GET IN TOUCH']].map(([index,label])=><button key={index} onClick={()=>navigate(Number(index))}><img src="/assets/city.svg" alt=""/><span>{label} ↗</span></button>)}</div>
             </>}
-            {screen === 1 && <><p className="section-lead reveal">Past shapes present.</p><div className="timeline reveal"><article><span className="timeline-marker"/><p className="eyebrow">PROFESSIONAL JOURNEY</p><h2>A story still being written.</h2><p>This space will connect work, projects, and the experiences behind them.</p><p className="draft-note">Roles, organizations, and dates are awaiting confirmation.</p></article></div><div className="journey-types reveal"><span>WORK</span><span>INITIATIVES</span><span>COMMUNITY</span></div></>}
+            {screen === 1 && <>
+              <div className="journey-caption reveal" aria-hidden="true"><span>EVERY EXPERIENCE<br/>SHAPES A BETTER TOMORROW.</span><p>Past<br/>shapes<br/><em>present.</em></p><small>EVERY PROJECT. EVERY CHALLENGE.<br/>A STRONGER ME.</small></div>
+              <p className="journey-draft reveal"><strong>DESIGN PREVIEW</strong> Sample roles, dates, and technologies from the reference. Not a verified résumé.</p>
+              <div className="journey-timeline"><div className="journey-line" aria-hidden="true"/><ol aria-label="Professional milestones — draft content">{experienceDrafts.map((entry,i)=><li className="journey-step" key={entry.period}>
+                <p className="journey-period">{entry.period}</p><span className="journey-dot" aria-hidden="true"/>
+                <article className="journey-entry"><div className="journey-index" aria-hidden="true"><small>CHAPTER</small><span>0{experienceDrafts.length-i}</span></div><div className="journey-copy"><h2>{entry.role}</h2><p className="journey-organization">{entry.organization}</p><p className="journey-description">{entry.description}</p><ul className="technology-tags" aria-label="Technologies">{entry.technologies.map(technology=><li key={technology}>{technology}</li>)}</ul></div></article>
+              </li>)}</ol></div>
+              <p className="journey-closing reveal">And leads to a greater future. <span>MORE THAN CODE.</span></p>
+            </>}
             {screen === 2 && <><p className="section-lead reveal">Build. Explore. Iterate.</p><div className="project-list">{projects.map((p,i)=><button className="project-card reveal" key={p.name} onClick={()=>setProject(i)}><div className="project-preview"><img src="/assets/city.svg" alt=""/><strong>0{i+1}</strong></div><div><small>{p.category}</small><h2>{p.name}</h2><p>{p.description}</p></div><span className="entry-arrow">↗</span></button>)}</div><p className="draft-note reveal">Case studies in progress. Open an entry to explore.</p></>}
             {screen === 3 && <><p className="section-lead reveal">Learn. Adapt. Build. Repeat.</p><div className="skills-grid">{abilities.map(([name,...items],i)=><article className="ability reveal" key={name}><small>ABILITY / 0{i+1}</small><h2>{name}</h2><ul>{items.map(item=><li key={item}>{item}</li>)}</ul></article>)}</div><p className="draft-note reveal">Technology list from the project brief. No proficiency scores assigned.</p></>}
             {screen === 4 && <><p className="section-lead reveal">Small steps. Meaningful milestones.</p><div className="milestone reveal"><span className="milestone-number">NEXT</span><h2>The collection starts here.</h2><p>Hackathons, certifications, and milestones will appear here once the details are confirmed.</p><span className="outline-label">AWAITING VERIFIED ENTRIES</span></div></>}
@@ -168,13 +212,14 @@ function App() {
             {screen === 6 && <><p className="section-lead reveal">Let’s build something great.</p><div className="contact-message reveal"><h2>Same vision.<br/>Bigger possibilities.</h2><p>Interesting projects, thoughtful conversations, and useful things built together.</p></div><div className="contact-grid reveal">{['Email','LinkedIn','GitHub'].map(name=><div key={name}><h2>{name} ↗</h2><p>Link awaiting confirmation</p></div>)}</div><p className="draft-note reveal">Contact channels will be connected after the public links are confirmed.</p></>}
           </div>
         </main>}
-        <aside className="identity reveal"><p>LUCKY RAMADHAN</p><span>Software Developer</span><div className="identity-stats"><div><small>ARCANA</small><strong>Developer</strong></div><div><small>CHAPTER</small><strong>{String(active+1).padStart(2,'0')}</strong></div><p>Building a better<br/>tomorrow, one line<br/>at a time.</p></div></aside>
-        <div className="party-rail" aria-hidden="true"><b>LEADER</b>{[0,1,2,3,4].map(i=><div className="gauge" key={i} style={{'--gauge':`${92-i*9}%`} as React.CSSProperties}><i/><span/></div>)}</div>
+        {screen !== WELCOME && <><aside className="identity reveal"><p>LUCKY RAMADHAN</p><span>Software Developer</span><div className="identity-stats"><div><small>ARCANA</small><strong>Developer</strong></div><div><small>CHAPTER</small><strong>{String(active+1).padStart(2,'0')}</strong></div><p>Building a better<br/>tomorrow, one line<br/>at a time.</p></div></aside>
+        <div className="party-rail" aria-hidden="true"><b>LEADER</b>{[0,1,2,3,4].map(i=><div className="gauge" key={i} style={{'--gauge':`${92-i*9}%`} as React.CSSProperties}><i/><span/></div>)}</div></>}
       </div>
-      <footer className="controls"><button className="motion-control" aria-pressed={reduced} onClick={()=>{transition.current?.progress(1);setReduced(!reduced);}}>{reduced ? 'MOTION: REDUCED' : 'MOTION: FULL'}</button>{screen >= 0 && <nav aria-label="Sections" className="section-nav">{sections.map((name,i)=><button key={name} aria-current={screen===i?'page':undefined} onClick={()=>navigate(i)}>{name}</button>)}</nav>}<div className="key-hints">{screen < 0 ? <><span className="move-hint"><kbd>↑</kbd><kbd>↓</kbd> Select</span><button onClick={()=>navigate(selected)}><kbd>↵</kbd> Confirm</button></> : <button onClick={()=>navigate(-1)}><kbd>Esc</kbd> Back</button>}</div></footer>
+      <footer className="controls"><button className="motion-control" aria-pressed={reduced} onClick={()=>{transition.current?.progress(1);setReduced(!reduced);}}>{reduced ? 'MOTION: REDUCED' : 'MOTION: FULL'}</button>{screen >= 0 && <nav aria-label="Sections" className="section-nav">{sections.map((name,i)=><button key={name} aria-current={screen===i?'page':undefined} onClick={()=>navigate(i)}>{name}</button>)}</nav>}<div className="key-hints">{screen === WELCOME ? <span><kbd>↑</kbd><kbd>↓</kbd> Select <kbd>↵</kbd> Confirm</span> : screen < 0 ? <><button onClick={()=>navigate(WELCOME)}><kbd>Esc</kbd> Title</button><span className="move-hint"><kbd>↑</kbd><kbd>↓</kbd> Select</span><button onClick={()=>navigate(selected)}><kbd>↵</kbd> Confirm</button></> : <button onClick={()=>navigate(-1)}><kbd>Esc</kbd> Back</button>}</div></footer>
       <div className="transition-wipe" ref={wipe} aria-hidden="true"><span>MAKE YOUR CHOICE.</span></div>
     </div>
     <dialog ref={dialog} onClose={()=>setProject(null)} onClick={e=>{if(e.target===dialog.current)setProject(null);}} className="project-dialog">{project !== null && <><p className="eyebrow">PROJECT FILE / 0{project+1}</p><h2>{projects[project].name}</h2><p>{projects[project].detail}</p><p className="draft-note">Preview / final case study pending</p><button autoFocus onClick={()=>setProject(null)}><kbd>Esc</kbd> Close entry</button></>}</dialog>
+    <dialog ref={configDialog} className="config-dialog" aria-labelledby="config-title"><p className="eyebrow">YOUR EXPERIENCE</p><h2 id="config-title">CONFIG</h2><label className="config-option"><span><strong>Reduced motion</strong><small>Keep transitions simple and pause ambient movement.</small></span><input type="checkbox" checked={reduced} onChange={e=>{transition.current?.progress(1);setReduced(e.target.checked);}}/></label><p className="config-help">Navigate with ↑ / ↓ or W / S. Press Enter to confirm, Escape to go back.</p><form method="dialog"><button>DONE <kbd>Esc</kbd></button></form></dialog>
   </div>;
 }
 
