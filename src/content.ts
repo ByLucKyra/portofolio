@@ -19,9 +19,29 @@ export const projects = [
 ];
 // Draft copy comes from the supplied brief/Figma, not a verified résumé.
 export const abilities = [
-  ['Programming', 'Python', 'JavaScript / TypeScript'],
-  ['Backend', 'Django', 'Node.js', 'REST APIs', 'Databases / Authentication'],
-  ['Frontend', 'React / Next.js', 'HTML & CSS'],
-  ['AI & Data', 'LLM integration', 'Agent development', 'Automation'],
-  ['DevOps & Tools', 'Git / GitHub', 'Docker', 'CI/CD', 'Linux'],
+  { name: 'Programming', mark: '</>', color: '#ffda66', skills: [
+    { name: 'Python', mark: 'Py', description: 'A versatile language for backend services, scripting, automation, and AI workflows.' },
+    { name: 'JavaScript / TypeScript', mark: 'JS/TS', description: 'Interactive applications and typed JavaScript across the browser and server.' },
+  ] },
+  { name: 'Backend', mark: '{ }', color: '#80e0ff', skills: [
+    { name: 'Django', mark: 'Dj', description: 'Python web applications with structured models, request handling, and an integrated admin.' },
+    { name: 'Node.js', mark: 'N', description: 'Server-side JavaScript for services, APIs, and event-driven applications.' },
+    { name: 'REST APIs', mark: 'API', description: 'HTTP interfaces that connect application features, clients, and services.' },
+    { name: 'Databases / Authentication', mark: 'DB', description: 'Application data, user identity, and access control for connected products.' },
+  ] },
+  { name: 'Frontend', mark: 'UI', color: '#83efca', skills: [
+    { name: 'React / Next.js', mark: 'R', description: 'Component-based interfaces, routing, and rendering for web applications.' },
+    { name: 'HTML & CSS', mark: 'H/C', description: 'Semantic page structure, responsive layouts, and visual styling for the web.' },
+  ] },
+  { name: 'AI & Data', mark: 'AI', color: '#e0b7ff', skills: [
+    { name: 'LLM integration', mark: 'LLM', description: 'Connecting language models to application features and contextual information.' },
+    { name: 'Agent development', mark: 'AG', description: 'Tool-using systems that coordinate steps in a research or application workflow.' },
+    { name: 'Automation', mark: 'AUTO', description: 'Repeatable workflows that connect tools and reduce manual steps.' },
+  ] },
+  { name: 'DevOps & Tools', mark: '>_', color: '#ffab8e', skills: [
+    { name: 'Git / GitHub', mark: 'GIT', description: 'Version history, collaboration, and review for changes to a codebase.' },
+    { name: 'Docker', mark: 'DO', description: 'Containerized applications and reproducible development environments.' },
+    { name: 'CI/CD', mark: 'CI', description: 'Automated checks and delivery workflows for application changes.' },
+    { name: 'Linux', mark: 'LX', description: 'Command-line tools, processes, and environments for development and deployment.' },
+  ] },
 ];

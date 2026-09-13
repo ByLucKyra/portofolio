@@ -4,6 +4,8 @@ import { sections, wrap, screenFromHash, screenHash, WELCOME, readSavedScreen, s
 test('menu wraps in both directions and every screen survives a URL round trip', () => {
   assert.equal(wrap(-1), 6); assert.equal(wrap(7), 0); assert.equal(wrap(-15), 6);
   assert.equal(wrap(-1, 3), 2); assert.equal(wrap(3, 3), 0); assert.equal(wrap(8, 3), 2);
+  // Skill tabs: ALL plus five branches, with wraparound in both directions.
+  assert.equal(wrap(-1, 6), 5); assert.equal(wrap(6, 6), 0);
   for (let i = WELCOME; i < sections.length; i++) assert.equal(screenFromHash(screenHash(i)), i);
   assert.equal(screenFromHash('#unknown'), WELCOME); assert.equal(screenFromHash(''), WELCOME);
 });

@@ -8,8 +8,9 @@ import '@fontsource/anton/400.css';
 import '@fontsource/inter/400.css';
 import '@fontsource/inter/500.css';
 import { sections, wrap, screenFromHash, screenHash, WELCOME, readSavedScreen, saveScreen } from './navigation.mjs';
-import { descriptions, subtitles, projects, abilities, experienceDrafts } from './content';
+import { descriptions, subtitles, projects, experienceDrafts } from './content';
 import { ProjectShowcase } from './ProjectShowcase';
+import { SkillTree } from './SkillTree';
 import './style.css';
 
 function App() {
@@ -170,7 +171,7 @@ function App() {
 
   const active = screen < 0 ? selected : screen;
   return <div className={`app ${reduced ? 'reduced-motion' : ''}`}>
-    <div className="stage" ref={stage} data-screen={screen === WELCOME ? 'welcome' : screen < 0 ? 'menu' : screen === 1 ? 'experience' : screen === 2 ? 'projects' : 'section'}>
+    <div className="stage" ref={stage} data-screen={screen === WELCOME ? 'welcome' : screen < 0 ? 'menu' : screen === 1 ? 'experience' : screen === 2 ? 'projects' : screen === 3 ? 'skills' : 'section'}>
       <div className="environment" aria-hidden="true"><div className="city-parallax"><div className="city-drift"><img src="/assets/city.svg" className="city" alt="" /></div></div><div className="light-beam beam-one"/><div className="light-beam beam-two"/><div className="water-shimmer"/><div className="depth"/></div>
       {screen !== WELCOME && <header className="hud"><div className="status-box"><strong>{String(active+1).padStart(2,'0')} <span>/ 07</span></strong><small>PERSONAL PORTFOLIO</small></div><div className="top-quote">LIFE IS A SERIES OF CHOICES.<span>選択の先に、きっと何かがある。</span></div></header>}
       <div className="scene" ref={scene} aria-busy={busy}>
@@ -191,7 +192,7 @@ function App() {
           </nav>
           <p className="menu-description reveal" aria-live="polite"><span>{String(selected+1).padStart(2,'0')} /</span> {descriptions[selected]}</p>
         </> : <main className="section-content">
-          <div className="section-heading reveal"><h1 tabIndex={-1}>{sections[screen]}</h1><p>{subtitles[screen]}</p></div>
+          <div className="section-heading reveal"><h1 tabIndex={-1}>{screen === 3 ? 'SKILL TREE' : sections[screen]}</h1><p>{subtitles[screen]}</p></div>
           <div className="section-body" key={screen}>
             {screen === 0 && <>
               <div className="about-intro reveal"><div><p className="eyebrow">HELLO, I'M</p><h2>LUCKY RAMADHAN</h2><p>I love turning ideas into real products. I’m curious about technology, solving problems, and making useful things through code.</p><p>Always curious, always learning, and ready for the next challenge.</p></div><dl className="facts"><dt>ROLE</dt><dd>Software Developer</dd><dt>FOCUS</dt><dd>Building useful things</dd><dt>APPROACH</dt><dd>Learn. Explore. Create.</dd><dt>PROFILE</dt><dd>Draft / in progress</dd></dl></div>
@@ -209,7 +210,7 @@ function App() {
               <p className="journey-closing reveal">And leads to a greater future. <span>MORE THAN CODE.</span></p>
             </>}
             {screen === 2 && <ProjectShowcase reduced={reduced} disabled={busy} onDetails={setProject}/>}
-            {screen === 3 && <><p className="section-lead reveal">Learn. Adapt. Build. Repeat.</p><div className="skills-grid">{abilities.map(([name,...items],i)=><article className="ability reveal" key={name}><small>ABILITY / 0{i+1}</small><h2>{name}</h2><ul>{items.map(item=><li key={item}>{item}</li>)}</ul></article>)}</div><p className="draft-note reveal">Technology list from the project brief. No proficiency scores assigned.</p></>}
+            {screen === 3 && <SkillTree reduced={reduced} disabled={busy}/>}
             {screen === 4 && <><p className="section-lead reveal">Small steps. Meaningful milestones.</p><div className="milestone reveal"><span className="milestone-number">NEXT</span><h2>The collection starts here.</h2><p>Hackathons, certifications, and milestones will appear here once the details are confirmed.</p><span className="outline-label">AWAITING VERIFIED ENTRIES</span></div></>}
             {screen === 5 && <><p className="section-lead reveal">A space to explore.</p><p className="reveal">A working notebook for ideas before they become finished projects.</p><div className="lab-list">{[['AI AGENT EXPERIMENTS','Research workflows and agent-assisted tools.'],['INTERFACE PLAYGROUND','Motion, interactions, and unusual ways to navigate.'],['IDEAS IN PROGRESS','Small prototypes, open questions, and possibilities.']].map(([name,desc],i)=><article className="reveal" key={name}><small>0{i+1} / EXPLORATION</small><h2>{name}</h2><p>{desc}</p></article>)}</div></>}
             {screen === 6 && <><p className="section-lead reveal">Let’s build something great.</p><div className="contact-message reveal"><h2>Same vision.<br/>Bigger possibilities.</h2><p>Interesting projects, thoughtful conversations, and useful things built together.</p></div><div className="contact-grid reveal">{['Email','LinkedIn','GitHub'].map(name=><div key={name}><h2>{name} ↗</h2><p>Link awaiting confirmation</p></div>)}</div><p className="draft-note reveal">Contact channels will be connected after the public links are confirmed.</p></>}

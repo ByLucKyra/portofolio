@@ -261,3 +261,87 @@
   .project-summary>p{font-size:1.3rem}
   .project-pagination{margin-left:.5rem}
 }
+
+/* Branch affinities and connected, selectable skill nodes. */
+.stage[data-screen=skills] .scene{padding:8rem 5vw 7rem}
+.stage[data-screen=skills] .section-content{max-width:88rem;margin:0 auto}
+.stage[data-screen=skills] .section-heading{margin:0 0 1.5rem 28%}
+.stage[data-screen=skills] .section-heading h1{position:relative;isolation:isolate;width:max-content;max-width:100%;padding:.1rem .8rem;font:800 italic clamp(3.4rem,6.5vw,6.5rem)/1.1 'Barlow Condensed';letter-spacing:-.04em;color:#020916;transform:rotate(-6deg) skewX(-8deg)}
+.stage[data-screen=skills] .section-heading h1::before{content:'';position:absolute;z-index:-1;inset:0 -.6rem;background:#f5fcff;border-bottom:6px solid #ff315c;clip-path:polygon(0 18%,100% 0,94% 87%,3% 100%)}
+.stage[data-screen=skills] .section-heading p{margin:1rem 0 0;font-size:.65rem;letter-spacing:.25em}
+.stage[data-screen=skills] .identity-stats,.stage[data-screen=skills] .party-rail{display:none}
+.skill-affinities{display:flex;justify-content:center;gap:clamp(.3rem,2vw,2rem);padding:1rem 0 2.4rem;position:relative}
+.skill-affinities::before{content:'';position:absolute;inset:40% -2vw 17%;background:#030d35bb;transform:rotate(-2deg);border-top:1px solid #88dcff55;z-index:-1}
+.skill-affinities button{display:flex;flex-direction:column;align-items:center;gap:.6rem;position:relative;min-width:5.5rem;padding:.4rem;color:#b5ccdf;font:700 .85rem 'Barlow Condensed';letter-spacing:.03em}
+.affinity-symbol{width:3.5rem;height:3.5rem;display:grid;place-items:center;border:2px solid var(--branch-color);border-radius:50%;background:#020b25;color:var(--branch-color);font:700 1.3rem 'Barlow Condensed';transform:rotate(-12deg);box-shadow:4px 5px 0 #0008;transition:transform .2s,background .2s}
+.skill-affinities button:nth-child(even) .affinity-symbol{transform:rotate(12deg)}
+.skill-affinities button[aria-selected=true]{color:#fff}
+.skill-affinities button[aria-selected=true] .affinity-symbol{background:var(--branch-color);color:#061129;outline:2px solid #f6fdff;outline-offset:4px;transform:rotate(-8deg) scale(1.1)}
+.skill-affinities button:hover .affinity-symbol{transform:translateY(-4px)}
+.affinity-pointer{position:absolute;bottom:-1.7rem;left:45%;font:800 italic 2rem/1 'Barlow Condensed';color:#fff;text-shadow:3px 2px #ff315c;opacity:0;transform:rotate(12deg)}
+.skill-affinities button[aria-selected=true] .affinity-pointer{opacity:1}
+.skill-tree-layout{display:grid;grid-template-columns:minmax(13rem,23%) minmax(0,1fr);gap:2rem;align-items:start}
+.skill-detail{border-top:3px solid var(--branch-color);padding:1.5rem 1.3rem;background:linear-gradient(145deg,#082458ee,#030b26f5);box-shadow:9px 10px 0 #02092355;position:relative}
+.skill-detail-symbol{display:grid;place-items:center;width:4.5rem;height:4.5rem;border:1px solid var(--branch-color);color:var(--branch-color);font:800 italic 1.8rem 'Barlow Condensed';transform:rotate(-8deg);margin:.25rem 0 1.5rem}
+.skill-detail-category{color:var(--branch-color);font-size:.7rem;margin:0 0 .35rem}
+.skill-detail h2{font:800 italic clamp(2rem,3vw,3rem)/1.1 'Barlow Condensed';letter-spacing:-.02em;margin:0 0 1rem;overflow-wrap:anywhere}
+.skill-detail-description{font-size:.84rem;line-height:1.7;color:#c9deee;margin:0 0 1.5rem}
+.skill-related h3{font:700 .8rem 'Barlow Condensed';letter-spacing:.12em;color:#c6eaff;margin:0 0 .4rem}
+.skill-related button{display:flex;align-items:center;justify-content:space-between;gap:.5rem;min-height:44px;width:100%;padding:.5rem 0;border-bottom:1px solid #b1e5ff22;text-align:left;font-size:.75rem;color:#b3cde2}
+.skill-related button[aria-pressed=true]{color:var(--branch-color)}
+.skill-related button:hover{color:#fff}
+.skill-draft{font-size:.6rem;line-height:1.6;color:#9bb9ce;margin:1.5rem 0 0}
+.skill-branches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem 1.25rem;min-width:0}
+.skill-branch{min-width:0;padding:.7rem .3rem .8rem;border-top:1px solid #89cfff44;background:linear-gradient(#0a2c6533,#020d2c66)}
+.skill-branch h2{margin:0 .7rem;font:700 1.25rem 'Barlow Condensed';color:#edf9ff;display:flex;justify-content:space-between;align-items:center;gap:.5rem}
+.skill-branch h2>span{font:400 .52rem Inter;letter-spacing:.08em;color:#b1cce2;white-space:nowrap}
+.skill-graph{position:relative;height:17rem;margin-top:.4rem}
+.skill-graph[data-compact=true]{height:12.5rem}
+.skill-connections{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.skill-connector{fill:none;stroke:#8fd8fa66;stroke-width:1.3;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:0}
+.skill-connector.is-active{stroke:var(--branch-color);stroke-width:2;filter:drop-shadow(0 0 3px var(--branch-color))}
+.skill-root{position:absolute;left:50%;top:14%;transform:translate(-50%,-50%);width:3.2rem;height:3.2rem;border:2px solid var(--branch-color);border-radius:50%;background:#061337;color:var(--branch-color);display:grid;place-items:center;font:700 1.2rem 'Barlow Condensed';box-shadow:0 0 15px #8fe6ff33}
+.skill-node{position:absolute;transform:translate(-50%,-22px);display:flex;flex-direction:column;align-items:center;gap:.45rem;width:6.6rem;min-height:44px;padding:0;color:#c5dcec}
+.skill-node-mark{position:relative;display:grid;place-items:center;width:44px;height:44px;border:1px solid #8ddfff99;border-radius:50%;background:#061735;font:700 .92rem 'Barlow Condensed';transition:background .18s,border-color .18s,box-shadow .18s}
+.skill-node-label{font:500 .64rem/1.3 Inter;max-width:100%;text-align:center}
+.skill-node[aria-pressed=true]{color:#fff;z-index:2}
+.skill-node[aria-pressed=true] .skill-node-mark{background:var(--branch-color);color:#071124;border-color:#fff;box-shadow:0 0 0 4px #91e5ff22,0 0 18px #91e5ff66}
+.skill-node[aria-pressed=true] .skill-node-mark::after{content:'';position:absolute;right:-10px;top:-7px;width:15px;height:20px;background:#ff315c;clip-path:polygon(100% 0,65% 90%,0 100%);transform:rotate(16deg)}
+.skill-node:hover .skill-node-mark{border-color:#fff;box-shadow:0 0 14px #91e5ff77}
+.skill-branches.is-focused{grid-template-columns:minmax(0,1fr)}
+.skill-branches.is-focused .skill-branch{padding:1rem clamp(1rem,5vw,5rem) 2rem}
+.skill-branches.is-focused .skill-branch h2{font-size:1.8rem}
+.skill-branches.is-focused .skill-graph{height:24rem;max-width:40rem;margin:1rem auto 0}
+.skill-branches.is-focused .skill-root{width:4.5rem;height:4.5rem;font-size:1.7rem}
+.skill-branches.is-focused .skill-node{width:9rem;transform:translate(-50%,-28px)}
+.skill-branches.is-focused .skill-node-mark{width:56px;height:56px;font-size:1.1rem}
+.skill-branches.is-focused .skill-node-label{font-size:.78rem}
+.skill-tree-hint{display:flex;justify-content:space-between;gap:1rem;color:#b5d5e8;font-size:.65rem;line-height:1.8;margin:1.7rem 0 0}
+.skill-tree-hint>span:first-child{color:#84dafa;letter-spacing:.12em}
+.skill-tree button:disabled{cursor:default;opacity:.65}
+.reduced-motion .affinity-symbol,.reduced-motion .skill-node-mark{transition:none}
+@media(max-width:1200px){.skill-branches{grid-template-columns:repeat(2,minmax(0,1fr))}.skill-tree-layout{gap:1.25rem}}
+@media(max-width:800px){
+  .stage[data-screen=skills] .scene{padding:8rem 1.25rem 7rem}
+  .stage[data-screen=skills] .section-heading{margin-left:1rem}
+  .skill-affinities{gap:.3rem;flex-wrap:wrap;justify-content:space-around;row-gap:2rem;margin-bottom:.8rem}
+  .skill-affinities button{min-width:4.5rem;font-size:.75rem}
+  .affinity-symbol{width:2.8rem;height:2.8rem;font-size:1.1rem}
+  .skill-tree-layout{grid-template-columns:minmax(0,1fr)}
+  .skill-detail{padding:1.1rem}
+  .skill-detail-symbol{float:left;width:3.3rem;height:3.3rem;margin:.1rem 1rem .6rem 0;font-size:1.3rem}
+  .skill-detail h2{font-size:2rem;margin-bottom:1rem}
+  .skill-detail-description{clear:both;margin-bottom:.8rem}
+  .skill-related{display:flex;flex-wrap:wrap;gap:.1rem 1rem}
+  .skill-related h3{flex-basis:100%}
+  .skill-related button{width:auto;font-size:.7rem}
+  .skill-draft{margin-top:1rem}
+  .skill-tree-hint{flex-wrap:wrap}
+}
+@media(max-width:480px){
+  .skill-affinities button{flex-basis:28%}
+  .skill-branches{grid-template-columns:minmax(0,1fr)}
+  .skill-branch{padding-inline:.8rem}
+  .skill-branches.is-focused .skill-branch{padding-inline:.5rem}
+  .skill-branches.is-focused .skill-node{width:7rem}
+}
