@@ -1,6 +1,6 @@
 export const sections = ['ABOUT', 'EXPERIENCE', 'PROJECTS', 'SKILLS', 'ACHIEVEMENTS', 'THE LAB', 'CONTACT'];
 export const WELCOME = -2;
-export function wrap(index) { return ((index % sections.length) + sections.length) % sections.length; }
+export function wrap(index, count = sections.length) { return ((index % count) + count) % count; }
 export function screenFromHash(hash) {
   if (hash === '#menu') return -1;
   const index = sections.findIndex(name => name.toLowerCase().replaceAll(' ', '-') === hash.replace(/^#/, ''));
