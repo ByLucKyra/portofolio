@@ -2,7 +2,7 @@ Tentu. Berikut rangkuman yang bisa kita jadikan **project context / source of tr
 
 # Lucky Ramadhan — Personal Portfolio Project
 
-> Update pengguna, 13 September 2026: gunakan UI Figma saat ini, tetapi tanpa karakter manusia untuk sementara. Ini menggantikan kebutuhan artwork karakter pada fase sementara ini. Layer karakter pada delapan screen prototype aktif (Main Menu, About, Experience, Projects, Skills, Achievements, Contact, The Lab), termasuk potret kecil dan thumbnail About, sudah disembunyikan di Figma agar dapat dipulihkan. Versi studi lama tetap tersimpan. Main Menu aktif: https://www.figma.com/design/n6Gi5Hx54vlBSV3T25HXUm?node-id=28-2 . Data placeholder pada UI tetap belum menjadi fakta terkonfirmasi.
+> Update pengguna, 13 September 2026: gunakan UI Figma saat ini, tetapi tanpa karakter manusia untuk sementara. Ini menggantikan kebutuhan artwork karakter pada fase sementara ini. Layer karakter pada screen prototype aktif sudah disembunyikan di Figma agar dapat dipulihkan. Versi studi lama tetap tersimpan. Main Menu aktif: https://www.figma.com/design/n6Gi5Hx54vlBSV3T25HXUm?node-id=28-2 . Data placeholder pada UI tetap belum menjadi fakta terkonfirmasi. THE LAB dihapus dari navigasi aktif.
 
 ## 1. Tujuan
 

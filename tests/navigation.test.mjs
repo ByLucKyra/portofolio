@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { sections, wrap, screenFromHash, screenHash, WELCOME, readSavedScreen, saveScreen } from '../src/navigation.mjs';
 test('menu wraps in both directions and every screen survives a URL round trip', () => {
-  assert.equal(wrap(-1), 6); assert.equal(wrap(7), 0); assert.equal(wrap(-15), 6);
+  assert.equal(wrap(-1), 5); assert.equal(wrap(6), 0); assert.equal(wrap(-15), 3);
   assert.equal(wrap(-1, 3), 2); assert.equal(wrap(3, 3), 0); assert.equal(wrap(8, 3), 2);
   // Skill tabs: ALL plus five branches, with wraparound in both directions.
   assert.equal(wrap(-1, 6), 5); assert.equal(wrap(6, 6), 0);

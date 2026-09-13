@@ -1,10 +1,9 @@
 export const descriptions = [
   'Who I am beyond the code.', 'The journey that shapes what comes next.',
   'Build. Explore. Iterate.', 'Learn. Adapt. Build. Repeat.',
-  'Small steps. Meaningful milestones.', 'Experiments, ideas, and things in progress.',
-  'Let’s connect and create together.',
+  'Small steps. Meaningful milestones.', 'Let’s connect and create together.',
 ];
-export const subtitles = ['PERSONAL PROFILE', 'PROFESSIONAL JOURNEY', 'SELECTED WORK', 'TOOLS & ABILITIES', 'MILESTONES', 'EXPERIMENTAL SPACE', 'MAKE A CONNECTION'];
+export const subtitles = ['PERSONAL PROFILE', 'PROFESSIONAL JOURNEY', 'SELECTED WORK', 'TOOLS & ABILITIES', 'MILESTONES', 'MAKE A CONNECTION'];
 // Visual-reference entries only. Replace with confirmed résumé data before publishing.
 export const experienceDrafts = [
   { period: '2024 — PRESENT', role: 'Software Developer', organization: 'K&U (Korea)', description: 'Developing and maintaining web applications for an international education platform. Working with modern web technologies and global teams.', technologies: ['Next.js', 'TypeScript', 'Python', 'Firebase'] },

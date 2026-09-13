@@ -30,7 +30,7 @@ Jangan mengubah placeholder visual menjadi fakta. Jangan mengarang umur, jabatan
 ## Aset dan desain yang perlu tersedia
 
 - Figma: https://www.figma.com/design/n6Gi5Hx54vlBSV3T25HXUm
-- File Figma sudah diperiksa pada 13 September 2026. Prototype aktif mencakup Main Menu dan tujuh section, termasuk THE LAB.
+- File Figma sudah diperiksa pada 13 September 2026. Prototype aktif yang dipakai aplikasi mencakup Main Menu dan enam section; THE LAB dihapus dari navigasi.
 - Keputusan terbaru: pertahankan UI Figma saat ini tanpa karakter manusia untuk sementara. Layer karakter disembunyikan pada screen aktif; kebutuhan artwork karakter di bawah ditunda untuk fase berikutnya.
 - Artwork dari percakapan sebelumnya belum tersedia sebagai file di proyek ini.
 - Dibutuhkan artwork Main Menu dan enam screen, dengan identitas karakter konsisten dan layer terpisah dari UI.

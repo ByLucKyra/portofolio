@@ -1,4 +1,4 @@
-export const sections = ['ABOUT', 'EXPERIENCE', 'PROJECTS', 'SKILLS', 'ACHIEVEMENTS', 'THE LAB', 'CONTACT'];
+export const sections = ['ABOUT', 'EXPERIENCE', 'PROJECTS', 'SKILLS', 'ACHIEVEMENTS', 'CONTACT'];
 export const WELCOME = -2;
 export function wrap(index, count = sections.length) { return ((index % count) + count) % count; }
 export function screenFromHash(hash) {
