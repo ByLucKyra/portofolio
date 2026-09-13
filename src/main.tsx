@@ -11,6 +11,7 @@ import { sections, wrap, screenFromHash, screenHash, WELCOME, readSavedScreen, s
 import { descriptions, subtitles, projects, experienceDrafts } from './content';
 import { ProjectShowcase } from './ProjectShowcase';
 import { SkillTree } from './SkillTree';
+import { AboutMenu } from './AboutMenu';
 import './style.css';
 
 function App() {
@@ -171,9 +172,9 @@ function App() {
 
   const active = screen < 0 ? selected : screen;
   return <div className={`app ${reduced ? 'reduced-motion' : ''}`}>
-    <div className="stage" ref={stage} data-screen={screen === WELCOME ? 'welcome' : screen < 0 ? 'menu' : screen === 1 ? 'experience' : screen === 2 ? 'projects' : screen === 3 ? 'skills' : 'section'}>
+    <div className="stage" ref={stage} data-screen={screen === WELCOME ? 'welcome' : screen < 0 ? 'menu' : screen === 0 ? 'about' : screen === 1 ? 'experience' : screen === 2 ? 'projects' : screen === 3 ? 'skills' : 'section'}>
       <div className="environment" aria-hidden="true"><div className="city-parallax"><div className="city-drift"><img src="/assets/city.svg" className="city" alt="" /></div></div><div className="light-beam beam-one"/><div className="light-beam beam-two"/><div className="water-shimmer"/><div className="depth"/></div>
-      {screen !== WELCOME && <header className="hud"><div className="status-box"><strong>{String(active+1).padStart(2,'0')} <span>/ 07</span></strong><small>PERSONAL PORTFOLIO</small></div><div className="top-quote">LIFE IS A SERIES OF CHOICES.<span>選択の先に、きっと何かがある。</span></div></header>}
+      {screen !== WELCOME && <header className="hud"><div className="status-box"><strong>{String(active+1).padStart(2,'0')} <span>/ {String(sections.length).padStart(2,'0')}</span></strong><small>PERSONAL PORTFOLIO</small></div><div className="top-quote">LIFE IS A SERIES OF CHOICES.<span>選択の先に、きっと何かがある。</span></div></header>}
       <div className="scene" ref={scene} aria-busy={busy}>
         {screen !== WELCOME && <div className={`screen-title ${screen >= 0 ? 'section-giant' : ''}`} aria-hidden="true">{screen < 0 ? 'MENU' : sections[screen]}</div>}
         {screen === WELCOME ? <main className="welcome-content">
@@ -192,14 +193,9 @@ function App() {
           </nav>
           <p className="menu-description reveal" aria-live="polite"><span>{String(selected+1).padStart(2,'0')} /</span> {descriptions[selected]}</p>
         </> : <main className="section-content">
-          <div className="section-heading reveal"><h1 tabIndex={-1}>{screen === 3 ? 'SKILL TREE' : sections[screen]}</h1><p>{subtitles[screen]}</p></div>
+          <div className="section-heading reveal"><h1 tabIndex={-1}>{screen === 0 ? 'ABOUT ME' : screen === 3 ? 'SKILL TREE' : sections[screen]}</h1><p>{subtitles[screen]}</p></div>
           <div className="section-body" key={screen}>
-            {screen === 0 && <>
-              <div className="about-intro reveal"><div><p className="eyebrow">HELLO, I'M</p><h2>LUCKY RAMADHAN</h2><p>I love turning ideas into real products. I’m curious about technology, solving problems, and making useful things through code.</p><p>Always curious, always learning, and ready for the next challenge.</p></div><dl className="facts"><dt>ROLE</dt><dd>Software Developer</dd><dt>FOCUS</dt><dd>Building useful things</dd><dt>APPROACH</dt><dd>Learn. Explore. Create.</dd><dt>PROFILE</dt><dd>Draft / in progress</dd></dl></div>
-              <section className="reveal"><h3>INTERESTS / DRAFT</h3><div className="interests">{['Coding','Learning','Games','Music','Travel','Anime & arts'].map((label,i)=><div key={label}><img src={`/assets/interest-${i}.svg`} alt="" width="34" height="28"/><span>{label}</span></div>)}</div></section>
-              <section className="reveal"><h3>WHAT DRIVES ME</h3><blockquote>“I believe technology can create opportunities, connect people, and solve real problems. I want to keep building, keep learning, and contribute to solutions that make a positive impact.”<cite>Lucky Ramadhan / draft copy</cite></blockquote></section>
-              <div className="perspectives reveal">{[[2,'VIEW PROJECTS'],[5,'GET IN TOUCH']].map(([index,label])=><button key={index} onClick={()=>navigate(Number(index))}><img src="/assets/city.svg" alt=""/><span>{label} ↗</span></button>)}</div>
-            </>}
+            {screen === 0 && <AboutMenu reduced={reduced} disabled={busy} onNavigate={navigate}/>}
             {screen === 1 && <>
               <div className="journey-caption reveal" aria-hidden="true"><span>EVERY EXPERIENCE<br/>SHAPES A BETTER TOMORROW.</span><p>Past<br/>shapes<br/><em>present.</em></p><small>EVERY PROJECT. EVERY CHALLENGE.<br/>A STRONGER ME.</small></div>
               <p className="journey-draft reveal"><strong>DESIGN PREVIEW</strong> Sample roles, dates, and technologies from the reference. Not a verified résumé.</p>

@@ -345,3 +345,124 @@
   .skill-branches.is-focused .skill-branch{padding-inline:.5rem}
   .skill-branches.is-focused .skill-node{width:7rem}
 }
+
+/* About: topic selection, conversation, and a character-profile dossier. */
+.stage[data-screen=about] .environment{background:#07152d url('/assets/about-study.png') center center/cover no-repeat}
+.stage[data-screen=about] .city-parallax{display:none}
+.stage[data-screen=about] .depth{background:linear-gradient(90deg,#02103022,#06132a11 35%,#020b24aa 68%,#020b24dd),linear-gradient(0deg,#02091fff,transparent 35%)}
+.stage[data-screen=about] .scene{padding:8rem 4vw 7rem}
+.stage[data-screen=about] .section-content{max-width:100rem;margin:0 auto}
+.stage[data-screen=about] .section-heading{margin:0 0 1.6rem 55%}
+.stage[data-screen=about] .section-heading h1{position:relative;isolation:isolate;width:max-content;max-width:100%;padding:.05rem .8rem;font:800 italic clamp(3.5rem,6vw,6.2rem)/1.1 'Barlow Condensed';letter-spacing:-.04em;color:#030712;transform:rotate(-7deg) skewX(-8deg)}
+.stage[data-screen=about] .section-heading h1::before{content:'';position:absolute;inset:0 -.7rem;z-index:-1;background:#f5fcff;border-bottom:5px solid #ff315c;clip-path:polygon(0 26%,100% 0,92% 82%,3% 100%)}
+.stage[data-screen=about] .section-heading p{margin:.8rem 0 0;font-size:.62rem;letter-spacing:.26em;color:#c5eaff}
+.stage[data-screen=about] .screen-title{left:-1rem;right:auto;top:10rem;font:800 italic clamp(6rem,13vw,13rem)/.9 'Barlow Condensed';writing-mode:vertical-rl;transform:rotate(180deg);color:#f2fbff22;letter-spacing:-.045em}
+.stage[data-screen=about] .identity-stats,.stage[data-screen=about] .party-rail{display:none}
+.about-character-menu{display:grid;grid-template-columns:7rem minmax(0,.95fr) minmax(0,1.25fr);gap:clamp(1rem,2.2vw,2.5rem);align-items:stretch}
+.about-topic-tabs{align-self:center;display:grid;gap:.2rem;transform:rotate(-7deg);margin-top:6rem}
+.about-topic-tabs button{position:relative;isolation:isolate;text-align:left;min-height:44px;padding:.5rem .7rem;font:700 1.15rem 'Barlow Condensed';color:#d5e7f5;letter-spacing:.04em;transition:color .2s,translate .2s}
+.about-topic-tabs button::before{content:'';position:absolute;inset:0 -.5rem;z-index:-1;background:#04112ddd;transform:skewY(-4deg);border-left:2px solid #76dfff66}
+.about-topic-tabs button[aria-selected=true]{color:white;translate:.5rem 0}
+.about-topic-tabs button[aria-selected=true]::before{background:#ff315c;border-color:white;box-shadow:4px 5px 0 #071227aa}
+.about-topic-tabs button:hover{color:#fff;translate:.5rem 0}
+.about-conversation{display:flex;flex-direction:column;justify-content:flex-end;gap:1.8rem;min-width:0}
+.about-handnote{font:800 italic clamp(1.8rem,3vw,3rem)/1.05 'Barlow Condensed';transform:rotate(-12deg);color:#e4f8ff;text-shadow:2px 3px #052955;margin:-4rem 0 auto 1rem;padding-bottom:5rem}
+.about-handnote span{color:#83e4ff}
+.about-questions{align-self:flex-end;width:min(100%,22rem);padding:.7rem;background:#03102dee;border:1px solid #98d7f4;box-shadow:6px 7px 0 #06132b88}
+.about-questions>p{font-size:.75rem;margin:.2rem .4rem .65rem;color:#d3e6f5}
+.about-questions button{display:block;position:relative;width:100%;min-height:44px;padding:.5rem .65rem;text-align:left;font:500 .75rem/1.4 Inter;color:#d5e9f6;border-left:3px solid transparent;transition:background .18s,color .18s}
+.about-questions button[aria-pressed=true],.about-questions button:hover{background:#eafaff;color:#123b89;border-left-color:#ff315c}
+.about-dialogue{position:relative;min-height:9rem;padding:1.3rem 1.3rem .8rem;background:#03102ef5;border:2px solid #b2e6ff;box-shadow:7px 8px 0 #2874c5aa;transform:rotate(-2deg)}
+.about-speaker{position:absolute;top:-1rem;left:.6rem;padding:.3rem 1.6rem .3rem .8rem;background:#a4e9ff;color:#051735;font:700 1rem 'Barlow Condensed';clip-path:polygon(0 0,100% 0,88% 100%,0 100%)}
+.about-dialogue>p{font:500 clamp(.85rem,1.1vw,1.02rem)/1.65 Inter;color:#ecf7ff;margin:.5rem 0 1rem;min-height:3.4em}
+.about-dialogue>small{font-size:.46rem;letter-spacing:.1em;color:#a0c7e4}
+.about-topic-panel{min-width:0;position:relative;background:#02122d55;padding:0 .6rem .3rem}
+.about-panel-content{min-height:31rem}
+.about-panel-kicker{margin:0 0 .3rem;font:700 .7rem 'Barlow Condensed';letter-spacing:.16em;color:#8edcff}
+.about-panel-content>h2{font:800 italic clamp(2rem,3.2vw,3.5rem)/1.1 'Barlow Condensed';margin:0 0 .7rem;letter-spacing:-.02em;color:#f6fcff}
+.about-introduction{font-size:clamp(.78rem,.95vw,.95rem);line-height:1.7;color:#d4e7f6;margin:0 0 1.2rem;max-width:38rem}
+.about-profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.about-info-box{border:1px solid #8ac9ee88;padding:.8rem;background:#03132ddd;margin-bottom:.7rem;min-width:0}
+.about-info-box h3{font:700 .88rem 'Barlow Condensed';letter-spacing:.1em;color:#dcefff;margin:0 0 .7rem;display:flex;justify-content:space-between;gap:.5rem;align-items:center}
+.about-info-box h3>span{font:400 .47rem Inter;letter-spacing:.05em;color:#90c8e7}
+.about-info-box dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:.65rem .7rem;align-items:baseline}
+.about-info-box dt{font:700 .58rem 'Barlow Condensed';color:#8edfff}
+.about-info-box dd{font-size:.7rem;line-height:1.4;margin:0;color:#e0eef9;overflow-wrap:anywhere}
+.about-trait{display:grid;grid-template-columns:1rem 1fr;gap:.15rem .4rem;width:100%;min-height:44px;text-align:left;border-top:1px solid #91d4fa22;padding:.35rem 0}
+.about-trait>span{grid-row:1/3;color:#77d4ff;font:700 .75rem 'Barlow Condensed'}
+.about-trait>strong{font-size:.73rem;font-weight:500}
+.about-trait>small{font-size:.55rem;letter-spacing:0;color:#a9c7dd}
+.about-trait:hover>strong{color:#85e7ff}
+.about-interest-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.3rem}
+.about-interest-grid button{display:flex;flex-direction:column;align-items:center;gap:.4rem;min-height:62px;padding:.4rem .15rem;border-bottom:2px solid transparent;transition:background .18s,border-color .18s}
+.about-interest-grid img{object-fit:contain}
+.about-interest-grid button>span{font-size:.52rem;line-height:1.3;color:#c6e4f6;text-align:center}
+.about-interest-grid button[aria-pressed=true]{background:#75e9fa15;border-color:#ff315c}
+.about-interest-grid button:hover{background:#75e9fa25}
+.about-quote-row{display:grid;grid-template-columns:minmax(0,1fr) 6.5rem;gap:1rem;align-items:start;margin-top:1rem}
+.about-quote-row blockquote{border:1px solid #81c7ef77;background:#03132de6;padding:1rem;font:800 italic 1.2rem/1.4 'Barlow Condensed'}
+.about-quote-row cite{font:800 italic 1.2rem 'Barlow Condensed';color:#80d9ff;text-align:right;margin-top:.5rem}
+.about-quote-row figure{margin:0;background:#eaf6ff;padding:.3rem .3rem .5rem;transform:rotate(7deg);box-shadow:4px 6px 0 #02092188}
+.about-quote-row figure img{width:100%;aspect-ratio:1.2;object-fit:cover;object-position:35% center;display:block}
+.about-quote-row figcaption{font:800 italic .8rem/1.1 'Barlow Condensed';text-align:center;color:#154e96;margin-top:.35rem}
+.about-copy-note{font-size:.47rem;letter-spacing:.1em;color:#a1bed4;margin:1rem 0 0}
+.about-story{list-style:none;margin:0 0 1.2rem;padding:0 0 0 1rem;border-left:1px solid #82d9ff88}
+.about-story li{padding:0 0 1.4rem .7rem}
+.about-story li>span{font:700 .65rem 'Barlow Condensed';letter-spacing:.1em;color:#82d9ff}
+.about-story h3{font:800 italic 1.6rem 'Barlow Condensed';letter-spacing:0;margin:.3rem 0;color:#effaff}
+.about-story p,.about-interest-detail p,.about-values p{font-size:.8rem;line-height:1.65;color:#c5dff0;margin:.4rem 0 0}
+.about-action{display:flex;align-items:center;gap:1.5rem;min-height:48px;padding:.55rem 1rem;background:#d9f6ff;border-bottom:3px solid #ff315c;color:#092552;font:800 italic 1.1rem 'Barlow Condensed';transform:skewX(-8deg)}
+.about-action:hover{background:#fff}
+.about-interest-detail{padding:1.2rem;background:#041735df;border-left:2px solid #83dfff;margin-top:1rem}
+.about-interest-detail h3{font:800 italic 2rem 'Barlow Condensed';letter-spacing:0;color:#edfbff;margin:.7rem 0}
+.about-values{display:grid;gap:.8rem}
+.about-values button{display:flex;gap:1rem;text-align:left;padding:1rem;background:#041735e6;border:1px solid #89cdef66}
+.about-values button>span{font:800 italic 2.8rem 'Barlow Condensed';color:#81dbff}
+.about-values h3{font:800 italic 1.7rem 'Barlow Condensed';color:#edfaff;letter-spacing:0;margin:0 0 .3rem}
+.about-values strong{font-size:.75rem;color:#82d9ff}
+.about-values button[aria-pressed=true],.about-values button:hover{border-color:#ecfaff;background:#0a3056ed}
+.about-perspective{padding:1.5rem;margin:1.5rem 0;background:#041735eb;font:800 italic 2rem/1.3 'Barlow Condensed';color:#ddf6ff}
+.about-next{display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:2rem}
+.about-next button{min-height:44px;font:700 1rem 'Barlow Condensed';color:#85dfff;border-bottom:1px solid #86d9ff88}
+.about-character-menu button:disabled{cursor:default;opacity:.65}
+.reduced-motion .about-character-menu button{transition:none}
+@media(max-width:1100px){
+  .about-character-menu{grid-template-columns:6rem minmax(0,.7fr) minmax(0,1.3fr);gap:1rem}
+  .about-topic-tabs button{font-size:1rem}
+  .about-profile-grid{grid-template-columns:1fr}
+  .about-profile-grid .about-info-box:last-child{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+  .about-profile-grid .about-info-box:last-child h3{grid-column:1/-1;margin:0}
+  .about-trait{grid-template-columns:1fr}.about-trait>span{display:none}
+  .about-interest-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .about-questions button{font-size:.7rem}
+}
+@media(max-width:800px){
+  .stage[data-screen=about] .scene{padding:8rem 1.25rem 7rem}
+  .stage[data-screen=about] .section-heading{margin:0 .8rem 2rem}
+  .stage[data-screen=about] .environment{background-position:38% top;background-size:auto 100vh}
+  .stage[data-screen=about] .depth{background:linear-gradient(#03143144,#031026c9 35rem,#020b24 65rem)}
+  .stage[data-screen=about] .screen-title{display:none}
+  .about-character-menu{grid-template-columns:minmax(0,1fr);gap:1.5rem}
+  .about-topic-tabs{display:flex;flex-wrap:wrap;gap:.3rem .8rem;transform:none;margin:0;grid-row:1}
+  .about-topic-tabs button{flex:1 1 auto;text-align:center;font-size:1rem}
+  .about-topic-tabs button[aria-selected=true],.about-topic-tabs button:hover{translate:0 -2px}
+  .about-conversation{grid-row:3;gap:1.7rem}
+  .about-handnote{display:none}
+  .about-topic-panel{grid-row:2;padding:1rem;background:#03122de6}
+  .about-panel-content{min-height:0}
+  .about-questions{width:100%}
+  .about-questions button{font-size:.8rem}
+  .about-dialogue{margin-inline:.3rem}
+  .about-profile-grid{grid-template-columns:1fr 1fr}
+  .about-profile-grid .about-info-box:last-child{display:block}
+  .about-interest-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .about-introduction{font-size:.85rem}
+  .about-interest-grid button>span{font-size:.6rem}
+}
+@media(max-width:480px){
+  .about-profile-grid{grid-template-columns:1fr}
+  .about-interest-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .about-profile-grid .about-info-box:last-child{display:grid;grid-template-columns:repeat(3,1fr)}
+  .about-dialogue>small{letter-spacing:0}
+  .about-topic-panel{padding:.8rem}
+}
