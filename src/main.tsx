@@ -97,8 +97,20 @@ function App() {
   useLayoutEffect(() => {
     if (screen >= 0 || !menu.current || !wedge.current) return;
     const button = menu.current.querySelector<HTMLElement>(`[data-index="${selected}"]`)!;
-    const position = () => gsap.to(wedge.current, { y: button.offsetTop, duration: reduced ? 0 : .28, ease: 'power3.out', overwrite: true });
-    position(); const observer = new ResizeObserver(position); observer.observe(menu.current);
+    const position = () => {
+      const label = button.querySelector('span')!;
+      const height = button.offsetHeight * 2.05;
+      const style = getComputedStyle(button);
+      gsap.to(wedge.current, {
+        x: button.offsetLeft - 48,
+        y: button.offsetTop - height * .38,
+        width: label.offsetWidth * Number(style.getPropertyValue('--stretch')) * 1.1 + 100,
+        height,
+        rotation: Number(style.getPropertyValue('--tilt').replace('deg', '')) || 0,
+        duration: reduced ? 0 : .26, ease: 'power3.out', overwrite: true,
+      });
+    };
+    position(); const observer = new ResizeObserver(position); observer.observe(menu.current); observer.observe(button);
     return () => { observer.disconnect(); gsap.killTweensOf(wedge.current); };
   }, [selected, screen, reduced]);
 
@@ -127,7 +139,7 @@ function App() {
 
   const active = screen < 0 ? selected : screen;
   return <div className={`app ${reduced ? 'reduced-motion' : ''}`}>
-    <div className="stage" ref={stage}>
+    <div className="stage" ref={stage} data-screen={screen < 0 ? 'menu' : 'section'}>
       <div className="environment" aria-hidden="true"><div className="city-parallax"><div className="city-drift"><img src="/assets/city.svg" className="city" alt="" /></div></div><div className="light-beam beam-one"/><div className="light-beam beam-two"/><div className="water-shimmer"/><div className="depth"/></div>
       <header className="hud"><div className="status-box"><strong>{String(active+1).padStart(2,'0')} <span>/ 07</span></strong><small>PERSONAL PORTFOLIO</small></div><div className="top-quote">LIFE IS A SERIES OF CHOICES.<span>選択の先に、きっと何かがある。</span></div></header>
       <div className="scene" ref={scene} aria-busy={busy}>
@@ -136,7 +148,7 @@ function App() {
           <h1 className="sr-only">Lucky Ramadhan — Personal portfolio</h1>
           <nav className="main-menu" aria-label="Main menu" ref={menu}>
             <img ref={wedge} className="selection-wedge" src="/assets/selection.svg" alt="" aria-hidden="true"/>
-            {sections.map((name, i) => <button key={name} data-index={i} className={`menu-button ${selected === i ? 'selected' : ''}`} aria-label={`Open ${name}`} onFocus={() => {if(!locked.current)setSelected(i);}} onPointerEnter={() => {if(!locked.current)setSelected(i);}} onClick={() => navigate(i)}><span>{name}</span></button>)}
+            {sections.map((name, i) => <button key={name} data-index={i} className={`menu-button ${selected === i ? 'selected' : ''}`} aria-label={`Open ${name}`} onFocus={() => {if(!locked.current)setSelected(i);}} onPointerEnter={() => {if(!locked.current)setSelected(i);}} onClick={() => navigate(i)}><span data-label={name}>{name}</span></button>)}
           </nav>
           <p className="menu-description reveal" aria-live="polite"><span>{String(selected+1).padStart(2,'0')} /</span> {descriptions[selected]}</p>
         </> : <main className="section-content">
