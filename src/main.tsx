@@ -8,10 +8,11 @@ import '@fontsource/anton/400.css';
 import '@fontsource/inter/400.css';
 import '@fontsource/inter/500.css';
 import { sections, wrap, screenFromHash, screenHash, WELCOME, readSavedScreen, saveScreen } from './navigation.mjs';
-import { descriptions, subtitles, projects, experienceDrafts } from './content';
+import { descriptions, subtitles, projects } from './content';
 import { ProjectShowcase } from './ProjectShowcase';
 import { SkillTree } from './SkillTree';
 import { AboutMenu } from './AboutMenu';
+import { ExperienceJourney } from './ExperienceJourney';
 import './style.css';
 
 function App() {
@@ -103,10 +104,6 @@ function App() {
           .from('.reveal', { y: 35, x: 38, opacity: 0, duration: .55, stagger: .055, ease: 'power3.out' }, .16);
         if (screen === -1) tl.from('.menu-button', { x: 180, opacity: 0, duration: .6, stagger: .045, ease: 'power4.out' }, .13);
         if (sectionNav.current) tl.from(sectionNav.current.children, { x: 45, y: 24, opacity: 0, duration: .55, stagger: .045, ease: 'power4.out' }, .2);
-      }
-      if (screen === 1) {
-        tl.from('.journey-line', { scaleY: 0, transformOrigin: 'top', duration: .85, ease: 'power2.out' }, .25)
-          .from('.journey-step', { x: 45, opacity: 0, duration: .45, stagger: .12, ease: 'power3.out' }, .35);
       }
     }, scene);
     return () => ctx.revert();
@@ -218,15 +215,7 @@ function App() {
           <div className="section-heading reveal"><h1 tabIndex={-1}>{screen === 0 ? 'ABOUT ME' : screen === 3 ? 'SKILL TREE' : sections[screen]}</h1><p>{subtitles[screen]}</p></div>
           <div className="section-body" key={screen}>
             {screen === 0 && <AboutMenu reduced={reduced} disabled={busy} onNavigate={navigate}/>}
-            {screen === 1 && <>
-              <div className="journey-caption reveal" aria-hidden="true"><span>EVERY EXPERIENCE<br/>SHAPES A BETTER TOMORROW.</span><p>Past<br/>shapes<br/><em>present.</em></p><small>EVERY PROJECT. EVERY CHALLENGE.<br/>A STRONGER ME.</small></div>
-              <p className="journey-draft reveal"><strong>DESIGN PREVIEW</strong> Sample roles, dates, and technologies from the reference. Not a verified résumé.</p>
-              <div className="journey-timeline"><div className="journey-line" aria-hidden="true"/><ol aria-label="Professional milestones — draft content">{experienceDrafts.map((entry,i)=><li className="journey-step" key={entry.period}>
-                <p className="journey-period">{entry.period}</p><span className="journey-dot" aria-hidden="true"/>
-                <article className="journey-entry"><div className="journey-index" aria-hidden="true"><small>CHAPTER</small><span>0{experienceDrafts.length-i}</span></div><div className="journey-copy"><h2>{entry.role}</h2><p className="journey-organization">{entry.organization}</p><p className="journey-description">{entry.description}</p><ul className="technology-tags" aria-label="Technologies">{entry.technologies.map(technology=><li key={technology}>{technology}</li>)}</ul></div></article>
-              </li>)}</ol></div>
-              <p className="journey-closing reveal">And leads to a greater future. <span>MORE THAN CODE.</span></p>
-            </>}
+            {screen === 1 && <ExperienceJourney reduced={reduced} disabled={busy}/>}
             {screen === 2 && <ProjectShowcase reduced={reduced} disabled={busy} onDetails={setProject}/>}
             {screen === 3 && <SkillTree reduced={reduced} disabled={busy}/>}
             {screen === 4 && <><p className="section-lead reveal">Small steps. Meaningful milestones.</p><div className="milestone reveal"><span className="milestone-number">NEXT</span><h2>The collection starts here.</h2><p>Hackathons, certifications, and milestones will appear here once the details are confirmed.</p><span className="outline-label">AWAITING VERIFIED ENTRIES</span></div></>}
