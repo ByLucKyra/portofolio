@@ -93,11 +93,13 @@ function App() {
     };
     const ctx = gsap.context(() => {
       gsap.set(scene.current, { x: 0, opacity: 1 });
+      if (screen === WELCOME && stage.current) { stage.current.scrollTop = 0; stage.current.scrollLeft = 0; }
       if (reduced) { gsap.set(wipe.current, { x: 0, xPercent: 130 }); finish(); return; }
       const tl = gsap.timeline({ onComplete: finish }); entrance.current = tl;
       if (screen === WELCOME) {
+        const mobile = window.matchMedia('(max-width:700px)').matches;
         tl.from('.welcome-brand', { y: -40, opacity: 0, duration: 1.1, ease: 'power3.out' }, .15)
-          .from('.welcome-button', { x: 100, opacity: 0, duration: .7, stagger: .1, ease: 'power4.out' }, .4)
+          .fromTo('.welcome-button', { x: mobile ? 0 : 100, y: mobile ? 24 : 0, opacity: 0 }, { x: 0, y: 0, opacity: 1, duration: .7, stagger: .1, ease: 'power4.out', clearProps: 'transform,translate,rotate,scale' }, .4)
           .from('.welcome-caption', { opacity: 0, duration: .7 }, .6);
       } else {
         tl.from('.screen-title', { x: -140, opacity: 0, duration: .7, ease: 'power4.out' }, .08)
