@@ -53,8 +53,30 @@ function App() {
     entrance.current?.kill();
     if (reduced) { commit(); return; }
     const tl = gsap.timeline(); transition.current = tl;
+    const chosen = current.current === -1 && next >= 0 && !fromHistory
+      ? menu.current?.querySelector<HTMLElement>(`[data-index="${next}"] span`) : null;
+    if (chosen && wipe.current) {
+      const rect = chosen.getBoundingClientRect();
+      const x = (value: number) => `${value / window.innerWidth * 100}%`;
+      const y = (value: number) => `${value / window.innerHeight * 100}%`;
+      const start = `polygon(${x(rect.left - 30)} ${y(rect.top + rect.height * .3)}, ${x(rect.right + 35)} ${y(rect.top - 20)}, ${x(rect.right)} ${y(rect.bottom)}, ${x(rect.left - 20)} ${y(rect.bottom + 10)})`;
+      const title = wipe.current.querySelector('span')!;
+      title.textContent = sections[next];
+      gsap.set(wipe.current, { x: 0, xPercent: 0, clipPath: start, backgroundColor: '#f5fcff' });
+      gsap.set(title, { position: 'absolute', left: 0, top: 0, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, xPercent: -50, yPercent: -50, fontFamily: 'Barlow Condensed', fontWeight: 800, fontStyle: 'italic', fontSize: getComputedStyle(chosen).fontSize, rotation: -8 });
+      tl.to(title, { scale: .94, duration: .12, ease: 'power2.in' })
+        .to(wipe.current, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', duration: .58, ease: 'power3.inOut' })
+        .to(title, { x: window.innerWidth / 2, y: window.innerHeight / 2, rotation: 0, scale: 1.15, duration: .58, ease: 'power3.inOut' }, '<')
+        .call(commit)
+        .to(title, { opacity: 0, duration: .18 }, '+=.1')
+        .to(wipe.current, { xPercent: 130, duration: .5, ease: 'power3.inOut' }, '<')
+        .set(wipe.current, { clearProps: 'clipPath,backgroundColor' })
+        .set(title, { clearProps: 'all' })
+        .call(() => { title.textContent = 'MAKE YOUR CHOICE.'; });
+      return;
+    }
     tl.to(scene.current, { x: next < 0 ? 70 : -70, opacity: 0, duration: .2, ease: 'power2.in' })
-      .fromTo(wipe.current, { xPercent: -130 }, { xPercent: 0, duration: .36, ease: 'power3.in' }, .06)
+      .fromTo(wipe.current, { x: 0, xPercent: -130 }, { xPercent: 0, duration: .36, ease: 'power3.in' }, .06)
       .call(commit)
       .to(wipe.current, { xPercent: 130, duration: .48, ease: 'power3.inOut' }, '+=.06');
   }
@@ -70,7 +92,7 @@ function App() {
     };
     const ctx = gsap.context(() => {
       gsap.set(scene.current, { x: 0, opacity: 1 });
-      if (reduced) { gsap.set(wipe.current, { xPercent: 130 }); finish(); return; }
+      if (reduced) { gsap.set(wipe.current, { x: 0, xPercent: 130 }); finish(); return; }
       const tl = gsap.timeline({ onComplete: finish }); entrance.current = tl;
       if (screen === WELCOME) {
         tl.from('.welcome-brand', { y: -40, opacity: 0, duration: 1.1, ease: 'power3.out' }, .15)
