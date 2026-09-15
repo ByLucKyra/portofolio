@@ -17,12 +17,14 @@ export async function finishAboutTransition(page) {
       heading: document.querySelector('.section-heading h1').textContent,
       wordVisible: getComputedStyle(word).visibility === 'visible',
       meVisible: getComputedStyle(me).opacity === '1' && getComputedStyle(me).clipPath === 'none',
+      bannerVisible: getComputedStyle(word.parentElement, '::before').opacity === '1',
+      bannerExpanded: parseFloat(getComputedStyle(flight).getPropertyValue('--banner-tail')) > 0,
       flightHidden: getComputedStyle(flight).visibility === 'hidden',
       distance: Math.hypot((target.left + target.right - landed.left - landed.right) / 2,
         (target.top + target.bottom - landed.top - landed.bottom) / 2),
     };
   });
   if (!state.ready || state.heading !== 'ABOUT ME' || !state.wordVisible || !state.meVisible ||
-      !state.flightHidden || state.distance > 2) throw new Error(JSON.stringify(state));
+      !state.bannerVisible || !state.bannerExpanded || !state.flightHidden || state.distance > 2) throw new Error(JSON.stringify(state));
   return state;
 }
