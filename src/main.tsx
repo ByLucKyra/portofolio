@@ -93,7 +93,7 @@ function App() {
               const word = destination();
               const heading = word.parentElement!;
               const style = getComputedStyle(heading);
-              return `${heading.offsetWidth - word.offsetWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)}px`;
+              return `${Math.max(0, heading.offsetWidth - word.offsetWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight))}px`;
             },
             duration: .45, ease: 'power3.inOut',
           }, 'title-flight+=.55')
