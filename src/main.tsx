@@ -28,6 +28,8 @@ function App() {
   const stage = useRef<HTMLDivElement>(null);
   const scene = useRef<HTMLDivElement>(null);
   const wipe = useRef<HTMLDivElement>(null);
+  const titleFlight = useRef<HTMLSpanElement>(null);
+  const aboutHandoff = useRef(false);
   const wedge = useRef<HTMLImageElement>(null);
   const menu = useRef<HTMLElement>(null);
   const sectionNav = useRef<HTMLElement>(null);
@@ -56,6 +58,7 @@ function App() {
     const tl = gsap.timeline(); transition.current = tl;
     const chosen = current.current === -1 && next >= 0 && !fromHistory
       ? menu.current?.querySelector<HTMLElement>(`[data-index="${next}"] span`) : null;
+    aboutHandoff.current = !!chosen && next === 0;
     if (chosen && wipe.current) {
       const rect = chosen.getBoundingClientRect();
       const x = (value: number) => `${value / window.innerWidth * 100}%`;
@@ -68,10 +71,30 @@ function App() {
       tl.to(title, { scale: .94, duration: .12, ease: 'power2.in' })
         .to(wipe.current, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', duration: .58, ease: 'power3.inOut' })
         .to(title, { x: window.innerWidth / 2, y: window.innerHeight / 2, rotation: 0, scale: 1.15, duration: .58, ease: 'power3.inOut' }, '<')
-        .call(commit)
-        .to(title, { opacity: 0, duration: .18 }, '+=.1')
+        .call(commit);
+      if (aboutHandoff.current) {
+        const destination = () => scene.current!.querySelector<HTMLElement>('.about-title-word')!;
+        tl.call(() => {
+          const bounds = title.getBoundingClientRect();
+          const style = getComputedStyle(title);
+          gsap.set(titleFlight.current, { visibility: 'visible', opacity: 1, x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2, xPercent: -50, yPercent: -50, fontSize: parseFloat(style.fontSize) * 1.15, rotation: 0, skewX: 0 });
+          gsap.set(title, { opacity: 0 });
+        })
+          .to(wipe.current, { xPercent: 130, duration: .65, ease: 'power3.inOut' })
+          .to(titleFlight.current, {
+            x: () => { const r = destination().getBoundingClientRect(); return r.left + r.width / 2; },
+            y: () => { const r = destination().getBoundingClientRect(); return r.top + r.height / 2; },
+            fontSize: () => getComputedStyle(destination()).fontSize,
+            rotation: -7, skewX: -8, duration: .8, ease: 'power3.inOut',
+          }, '<')
+          .call(() => { gsap.set(destination(), { visibility: 'visible' }); })
+          .set(titleFlight.current, { visibility: 'hidden' })
+          .call(() => { aboutHandoff.current = false; });
+      } else {
+        tl.to(title, { opacity: 0, duration: .18 }, '+=.1')
         .to(wipe.current, { xPercent: 130, duration: .5, ease: 'power3.inOut' }, '<')
-        .set(wipe.current, { clearProps: 'clipPath,backgroundColor' })
+      }
+      tl.set(wipe.current, { clearProps: 'clipPath,backgroundColor' })
         .set(title, { clearProps: 'all' })
         .call(() => { title.textContent = 'MAKE YOUR CHOICE.'; });
       return;
@@ -103,7 +126,12 @@ function App() {
           .from('.welcome-caption', { opacity: 0, duration: .7 }, .6);
       } else {
         tl.from('.screen-title', { x: -140, opacity: 0, duration: .7, ease: 'power4.out' }, .08)
-          .from('.reveal', { y: 35, x: 38, opacity: 0, duration: .55, stagger: .055, ease: 'power3.out' }, .16);
+          .from(screen === 0 && aboutHandoff.current ? '.reveal:not(.section-heading)' : '.reveal', { y: 35, x: 38, opacity: 0, duration: .55, stagger: .055, ease: 'power3.out' }, .16);
+        if (screen === 0 && aboutHandoff.current) {
+          gsap.set('.about-title-word', { visibility: 'hidden' });
+          tl.fromTo('.about-title-me', { x: -24, opacity: 0, clipPath: 'inset(0 100% 0 0)' }, { x: 0, opacity: 1, clipPath: 'inset(0 0% 0 0)', duration: .45, ease: 'power3.out', clearProps: 'transform,opacity,clipPath' }, .7)
+            .from('.section-heading p', { y: 12, opacity: 0, duration: .35 }, .8);
+        }
         if (screen === -1) tl.from('.menu-button', { x: 180, opacity: 0, duration: .6, stagger: .045, ease: 'power4.out' }, .13);
         if (sectionNav.current) tl.from(sectionNav.current.children, { x: 45, y: 24, opacity: 0, duration: .55, stagger: .045, ease: 'power4.out' }, .2);
       }
@@ -214,7 +242,7 @@ function App() {
           </nav>
           <p className="menu-description reveal" aria-live="polite"><span>{String(selected+1).padStart(2,'0')} /</span> {descriptions[selected]}</p>
         </> : <main className="section-content">
-          <div className="section-heading reveal"><h1 tabIndex={-1}>{screen === 0 ? 'ABOUT ME' : screen === 3 ? 'SKILL TREE' : sections[screen]}</h1><p>{subtitles[screen]}</p></div>
+          <div className="section-heading reveal"><h1 tabIndex={-1}>{screen === 0 ? <><span className="about-title-word">ABOUT</span>{' '}<span className="about-title-me">ME</span></> : screen === 3 ? 'SKILL TREE' : sections[screen]}</h1><p>{subtitles[screen]}</p></div>
           <div className="section-body" key={screen}>
             {screen === 0 && <AboutMenu reduced={reduced} disabled={busy} onNavigate={navigate}/>}
             {screen === 1 && <ExperienceJourney reduced={reduced} disabled={busy}/>}
@@ -229,6 +257,7 @@ function App() {
       </div>
       <footer className="controls"><button className="motion-control" aria-pressed={reduced} onClick={()=>{transition.current?.progress(1);setReduced(!reduced);}}>{reduced ? 'MOTION: REDUCED' : 'MOTION: FULL'}</button>{screen >= 0 && <nav ref={sectionNav} aria-label="Sections" className="section-nav">{sections.map((name,i)=><button key={name} aria-current={screen===i?'page':undefined} onClick={()=>navigate(i)}><span>{name}</span></button>)}</nav>}<div className="key-hints">{screen === WELCOME ? <span><kbd>↑</kbd><kbd>↓</kbd> Select <kbd>↵</kbd> Confirm</span> : screen < 0 ? <><button onClick={()=>navigate(WELCOME)}><kbd>Esc</kbd> Title</button><span className="move-hint"><kbd>↑</kbd><kbd>↓</kbd> Select</span><button onClick={()=>navigate(selected)}><kbd>↵</kbd> Confirm</button></> : <button onClick={()=>navigate(-1)}><kbd>Esc</kbd> Back</button>}</div></footer>
       <div className="transition-wipe" ref={wipe} aria-hidden="true"><span>MAKE YOUR CHOICE.</span></div>
+      <span className="about-title-flight" ref={titleFlight} aria-hidden="true">ABOUT</span>
     </div>
     <dialog ref={dialog} onClose={()=>setProject(null)} onClick={e=>{if(e.target===dialog.current)setProject(null);}} className="project-dialog">{project !== null && <><p className="eyebrow">PROJECT FILE / 0{project+1}</p><h2>{projects[project].name}</h2><p>{projects[project].detail}</p><p className="draft-note">Preview / final case study pending</p><button autoFocus onClick={()=>setProject(null)}><kbd>Esc</kbd> Close entry</button></>}</dialog>
     <dialog ref={configDialog} className="config-dialog" aria-labelledby="config-title"><p className="eyebrow">YOUR EXPERIENCE</p><h2 id="config-title">CONFIG</h2><label className="config-option"><span><strong>Reduced motion</strong><small>Keep transitions simple and pause ambient movement.</small></span><input type="checkbox" checked={reduced} onChange={e=>{transition.current?.progress(1);setReduced(e.target.checked);}}/></label><p className="config-help">Navigate with ↑ / ↓ or W / S. Press Enter to confirm, Escape to go back.</p><form method="dialog"><button>DONE <kbd>Esc</kbd></button></form></dialog>

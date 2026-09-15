@@ -380,6 +380,8 @@
 }
 
 /* About: topic selection, conversation, and a character-profile dossier. */
+.about-title-word,.about-title-me{display:inline-block}
+.about-title-flight{position:fixed;left:0;top:0;z-index:21;visibility:hidden;pointer-events:none;color:#030712;font:800 italic 4rem/1.1 'Barlow Condensed';letter-spacing:-.04em;white-space:nowrap}
 .stage[data-screen=about] .environment{background:#07152d url('/assets/about-study.png') center center/cover no-repeat}
 .stage[data-screen=about] .city-parallax{display:none}
 .stage[data-screen=about] .depth{background:linear-gradient(90deg,#02103022,#06132a11 35%,#020b24aa 68%,#020b24dd),linear-gradient(0deg,#02091fff,transparent 35%)}
