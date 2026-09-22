@@ -1,5 +1,34 @@
 # Portfolio artwork
 
+## Welcome student silhouettes
+
+Generated with the built-in `image_gen` tool. Three original transparent cutouts; displayed only on the welcome screen. The classroom is preserved as a separate layer.
+
+### seated
+
+Saved asset: `public/assets/welcome-student-seated.png`
+
+Exact generation prompt:
+
+Use case: stylized-concept. Asset type: a SINGLE original school-student cutout sprite for a layered interactive blue classroom welcome screen. Actual transparent background with alpha channel. Portrait 2:3 composition, full figure entirely in frame with small transparent margin. Polished Japanese graphic-animation silhouette aesthetic. Faceless, no eyes, no mouth, no skin tones; hair and face are the SAME solid cyan silhouette. Modest regular school uniform blazer, shirt, tie, and trousers or knee-length skirt, simple crisp angular shape separations in two flat blue tones. Main silhouette icy cyan #64dfff, shadows cobalt #2864dd, shirt pale cyan #b4f4ff, ONE vivid coral red armband on upper arm, no emblem. Clean confident flat cel shapes, practically no texture, no realistic shading, no text, no letters, no logos, no outlines outside the figure, no glow, no background scene, no ground plane, no cast shadow. No game character likeness. Subject: one teenage male school student with medium short tousled hair, seated sideways on a simple dark navy classroom chair, leaning his left forearm along the chair back and right hand resting loosely on his knee, facing three-quarter RIGHT. Relaxed natural everyday school pose. Include only the student and minimal chair; no desk. Both feet and chair legs visible. The full silhouette should fill most of the portrait frame, not be tiny.
+
+### standing
+
+Saved asset: `public/assets/welcome-student-standing.png`
+
+Exact generation prompt:
+
+Use case: stylized-concept. Asset type: a SINGLE original school-student cutout sprite for a layered interactive blue classroom welcome screen. Actual transparent background with alpha channel. Portrait 2:3 composition, full figure entirely in frame with small transparent margin. Polished Japanese graphic-animation silhouette aesthetic. Faceless, no eyes, no mouth, no skin tones; hair and face are the SAME solid cyan silhouette. Modest regular school uniform blazer, shirt, tie, and trousers or knee-length skirt, simple crisp angular shape separations in two flat blue tones. Main silhouette icy cyan #64dfff, shadows cobalt #2864dd, shirt pale cyan #b4f4ff, ONE vivid coral red armband on upper arm, no emblem. Clean confident flat cel shapes, practically no texture, no realistic shading, no text, no letters, no logos, no outlines outside the figure, no glow, no background scene, no ground plane, no cast shadow. No game character likeness. Subject: one teenage female school student with a short bob hairstyle, knee-length pleated uniform skirt and opaque cobalt tights, standing upright reading a closed notebook held to her chest with one hand, other hand resting on shoulder-bag strap, facing three-quarter LEFT. Normal comfortable standing stance with both feet visible. Only the single student and notebook/bag. The full silhouette should fill most of the portrait frame, not be tiny.
+
+### leaning
+
+Saved asset: `public/assets/welcome-student-leaning.png`
+
+Exact generation prompt:
+
+Use case: stylized-concept. Asset type: a SINGLE original school-student cutout sprite for a layered interactive blue classroom welcome screen. Actual transparent background with alpha channel. Portrait 2:3 composition, full figure entirely in frame with small transparent margin. Polished Japanese graphic-animation silhouette aesthetic. Faceless, no eyes, no mouth, no skin tones; hair and face are the SAME solid cyan silhouette. Modest regular school uniform blazer, shirt, tie, and trousers or knee-length skirt, simple crisp angular shape separations in two flat blue tones. Main silhouette icy cyan #64dfff, shadows cobalt #2864dd, shirt pale cyan #b4f4ff, ONE vivid coral red armband on upper arm, no emblem. Clean confident flat cel shapes, practically no texture, no realistic shading, no text, no letters, no logos, no outlines outside the figure, no glow, no background scene, no ground plane, no cast shadow. No game character likeness. Subject: one teenage male school student with short swept hair, wearing a blazer and uniform trousers, a messenger school bag hanging from his shoulder at hip. Standing with a gentle forward lean as if speaking to a friend, right hand raised near collar and left hand casually holding the bag strap, facing three-quarter LEFT. Full standing body with shoes visible, natural relaxed anatomy. Only the single student and bag. The full silhouette should fill most of the portrait frame, not be tiny.
+
+
 Asset: `public/assets/project-arcana.png`
 
 Generated with the built-in image_gen tool. Symbolic concept cover shared by the project selector, with different treatments per project; not a product screenshot. Replace with confirmed project artwork when available.

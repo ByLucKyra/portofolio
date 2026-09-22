@@ -15,6 +15,7 @@ import { AboutMenu } from './AboutMenu';
 import { ExperienceJourney } from './ExperienceJourney';
 import { MenuEmblem } from './MenuEmblem';
 import { EnvironmentElements } from './EnvironmentElements';
+import { WelcomeStudents } from './WelcomeStudents';
 import { attachParallax } from './parallax.mjs';
 import { playButtonSound } from './button-sound.mjs';
 import './style.css';
@@ -283,9 +284,9 @@ function App() {
   }, [reduced]);
 
   useEffect(() => {
-    if (reduced || screen === WELCOME) return;
+    if (reduced) return;
     return attachParallax(stage.current!);
-  }, [screen === WELCOME, reduced]);
+  }, [reduced]);
 
   useEffect(() => {
     const camera = gsap.to(stage.current, {
@@ -363,6 +364,7 @@ function App() {
       <div className="scene" ref={scene} aria-busy={busy}>
         {screen !== WELCOME && <div className={`screen-title ${screen >= 0 ? 'section-giant' : ''}`} aria-hidden="true">{screen < 0 ? 'MENU' : sections[screen]}</div>}
         {screen === WELCOME ? <main className="welcome-content">
+          <WelcomeStudents/>
           <div className="welcome-brand"><div className="welcome-monogram" aria-hidden="true">LR<span>01</span></div><h1>LUCKY<br/><span>RAMADHAN</span></h1><div className="welcome-edition"><span>PERSONAL</span><strong>PORTFOLIO</strong></div><p>SOFTWARE DEVELOPER / A WORK IN PROGRESS</p></div>
           <div className="welcome-caption"><span>YOUR NEXT CHAPTER STARTS HERE.</span><p>Every idea.<br/>A new possibility.</p><small>EXPLORE · BUILD · REPEAT</small></div>
           <nav className="welcome-menu" aria-label="Welcome menu">
