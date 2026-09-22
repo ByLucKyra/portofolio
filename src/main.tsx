@@ -29,6 +29,33 @@ function App() {
     try { return localStorage.getItem('lucky:sound') !== 'off'; } catch { return true; }
   });
   const audio = useRef<AudioContext | null>(null);
+  const soundtrack = useRef<HTMLAudioElement>(null);
+  const musicUnlocked = useRef(false);
+  const [music, setMusic] = useState(() => {
+    try { return localStorage.getItem('lucky:music') !== 'off'; } catch { return true; }
+  });
+  const [musicVolume, setMusicVolume] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lucky:music-volume');
+      const value = saved === null ? .18 : Number(saved);
+      return Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : .18;
+    } catch { return .18; }
+  });
+  useEffect(() => {
+    const player = soundtrack.current!;
+    player.volume = musicVolume;
+    const sync = () => {
+      if (music && musicUnlocked.current && !document.hidden) void player.play().catch(() => {});
+      else player.pause();
+    };
+    try {
+      localStorage.setItem('lucky:music', music ? 'on' : 'off');
+      localStorage.setItem('lucky:music-volume', String(musicVolume));
+    } catch { /* Keep controls usable when storage is unavailable. */ }
+    sync();
+    document.addEventListener('visibilitychange', sync);
+    return () => { document.removeEventListener('visibilitychange', sync); player.pause(); };
+  }, [music, musicVolume]);
   const soundEnabled = useRef(sound);
   soundEnabled.current = sound;
   useEffect(() => {
@@ -38,7 +65,10 @@ function App() {
 
   async function buttonSound(event: React.MouseEvent<HTMLDivElement>) {
     const button = event.target instanceof Element ? event.target.closest('button') : null;
-    if (!soundEnabled.current || !button || button.disabled || button.getAttribute('aria-disabled') === 'true' || !('AudioContext' in window)) return;
+    if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
+    musicUnlocked.current = true;
+    if (music && !document.hidden) void soundtrack.current?.play().catch(() => {});
+    if (!soundEnabled.current || !('AudioContext' in window)) return;
     const cue = button.closest('dialog') ? 'detail' : screen === WELCOME ? 'welcome' : screen < 0 ? 'menu' : 'detail';
     try {
       const context = audio.current ??= new AudioContext();
@@ -291,12 +321,13 @@ function App() {
         {screen !== WELCOME && <><aside className="identity reveal"><p>LUCKY RAMADHAN</p><span>Software Developer</span><div className="identity-stats"><div><small>ARCANA</small><strong>Developer</strong></div><div><small>CHAPTER</small><strong>{String(active+1).padStart(2,'0')}</strong></div><p>Building a better<br/>tomorrow, one line<br/>at a time.</p></div></aside>
         <div className="party-rail" aria-hidden="true"><b>LEADER</b>{[0,1,2,3,4].map(i=><div className="gauge" key={i} style={{'--gauge':`${92-i*9}%`} as React.CSSProperties}><i/><span/></div>)}</div></>}
       </div>
-      <footer className="controls"><button className="motion-control" aria-pressed={reduced} onClick={()=>{transition.current?.progress(1);setReduced(!reduced);}}>{reduced ? 'MOTION: REDUCED' : 'MOTION: FULL'}</button>{screen >= 0 && <nav ref={sectionNav} aria-label="Sections" className="section-nav">{sections.map((name,i)=><button key={name} aria-current={screen===i?'page':undefined} onClick={()=>navigate(i)}><span>{name}</span></button>)}</nav>}<div className="key-hints">{screen === WELCOME ? <span><kbd>↑</kbd><kbd>↓</kbd> Select <kbd>↵</kbd> Confirm</span> : screen < 0 ? <><button onClick={()=>navigate(WELCOME)}><kbd>Esc</kbd> Title</button><span className="move-hint"><kbd>↑</kbd><kbd>↓</kbd> Select</span><button onClick={()=>navigate(selected)}><kbd>↵</kbd> Confirm</button></> : <button onClick={()=>navigate(-1)}><kbd>Esc</kbd> Back</button>}</div></footer>
+      <footer className="controls"><div className="audio-controls"><button className="motion-control" aria-pressed={reduced} onClick={()=>{transition.current?.progress(1);setReduced(!reduced);}}>{reduced ? 'MOTION: REDUCED' : 'MOTION: FULL'}</button><button className="motion-control" aria-pressed={music} onClick={()=>setMusic(!music)}>{music ? 'MUSIC: ON' : 'MUSIC: OFF'}</button></div>{screen >= 0 && <nav ref={sectionNav} aria-label="Sections" className="section-nav">{sections.map((name,i)=><button key={name} aria-current={screen===i?'page':undefined} onClick={()=>navigate(i)}><span>{name}</span></button>)}</nav>}<div className="key-hints">{screen === WELCOME ? <span><kbd>↑</kbd><kbd>↓</kbd> Select <kbd>↵</kbd> Confirm</span> : screen < 0 ? <><button onClick={()=>navigate(WELCOME)}><kbd>Esc</kbd> Title</button><span className="move-hint"><kbd>↑</kbd><kbd>↓</kbd> Select</span><button onClick={()=>navigate(selected)}><kbd>↵</kbd> Confirm</button></> : <button onClick={()=>navigate(-1)}><kbd>Esc</kbd> Back</button>}</div></footer>
       <div className="transition-wipe" ref={wipe} aria-hidden="true"><span>MAKE YOUR CHOICE.</span></div>
       <span className="section-title-flight" ref={titleFlight} aria-hidden="true">{active === 3 ? 'SKILL' : sections[active]}<span className="title-flight-extra">{active === 0 ? ' ME' : active === 3 ? ' TREE' : ''}</span></span>
     </div>
     <dialog ref={dialog} onClose={()=>setProject(null)} onClick={e=>{if(e.target===dialog.current)setProject(null);}} className="project-dialog">{project !== null && <><p className="eyebrow">PROJECT FILE / 0{project+1}</p><h2>{projects[project].name}</h2><p>{projects[project].detail}</p><p className="draft-note">Preview / final case study pending</p><button autoFocus onClick={()=>setProject(null)}><kbd>Esc</kbd> Close entry</button></>}</dialog>
-    <dialog ref={configDialog} className="config-dialog" aria-labelledby="config-title"><p className="eyebrow">YOUR EXPERIENCE</p><h2 id="config-title">CONFIG</h2><label className="config-option"><span><strong>Reduced motion</strong><small>Keep transitions simple and pause ambient movement.</small></span><input type="checkbox" checked={reduced} onChange={e=>{transition.current?.progress(1);setReduced(e.target.checked);}}/></label><label className="config-option"><span><strong>Button sounds</strong><small>Play a short sound when a button is activated.</small></span><input type="checkbox" checked={sound} onChange={e=>setSound(e.target.checked)}/></label><p className="config-help">Navigate with ↑ / ↓ or W / S. Press Enter to confirm, Escape to go back.</p><form method="dialog"><button>DONE <kbd>Esc</kbd></button></form></dialog>
+    <dialog ref={configDialog} className="config-dialog" aria-labelledby="config-title"><p className="eyebrow">YOUR EXPERIENCE</p><h2 id="config-title">CONFIG</h2><label className="config-option"><span><strong>Reduced motion</strong><small>Keep transitions simple and pause ambient movement.</small></span><input type="checkbox" checked={reduced} onChange={e=>{transition.current?.progress(1);setReduced(e.target.checked);}}/></label><label className="config-option"><span><strong>Button sounds</strong><small>Play a short sound when a button is activated.</small></span><input type="checkbox" checked={sound} onChange={e=>setSound(e.target.checked)}/></label><label className="config-option"><span><strong>Soundtrack</strong><small>Blue Hour · Original JRPG-inspired instrumental</small></span><input type="checkbox" checked={music} onChange={e=>{musicUnlocked.current=true;setMusic(e.target.checked);}}/></label><label className="config-option music-volume"><span><strong>Music volume</strong><small>{Math.round(musicVolume*100)}%</small></span><input type="range" min="0" max="100" value={Math.round(musicVolume*100)} onChange={e=>setMusicVolume(Number(e.target.value)/100)}/></label><p className="config-help">Navigate with ↑ / ↓ or W / S. Press Enter to confirm, Escape to go back.</p><form method="dialog"><button>DONE <kbd>Esc</kbd></button></form></dialog>
+    <audio ref={soundtrack} src="/assets/blue-hour.wav" loop preload="none"/>
   </div>;
 }
 

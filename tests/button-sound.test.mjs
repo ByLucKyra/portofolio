@@ -1,6 +1,21 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { playButtonSound } from '../src/button-sound.mjs';
+
+test('soundtrack is a complete stereo loop with headroom', () => {
+  const wav = readFileSync(new URL('../public/assets/blue-hour.wav', import.meta.url));
+  assert.equal(wav.toString('ascii', 0, 4), 'RIFF');
+  assert.equal(wav.toString('ascii', 8, 12), 'WAVE');
+  assert.equal(wav.readUInt16LE(22), 2);
+  assert.equal(wav.readUInt32LE(24), 22050);
+  assert.equal(wav.readUInt32LE(40), wav.length - 44);
+  const duration = (wav.length - 44) / 4 / 22050;
+  assert.ok(duration > 36 && duration < 38);
+  let peak = 0;
+  for (let i = 44; i < wav.length; i += 2) peak = Math.max(peak, Math.abs(wav.readInt16LE(i)));
+  assert.equal(peak, 22000);
+});
 
 test('three distinct cues stay quiet, stop promptly, and release their nodes', () => {
   const signatures = [];
