@@ -39,10 +39,11 @@ function App() {
   async function buttonSound(event: React.MouseEvent<HTMLDivElement>) {
     const button = event.target instanceof Element ? event.target.closest('button') : null;
     if (!soundEnabled.current || !button || button.disabled || button.getAttribute('aria-disabled') === 'true' || !('AudioContext' in window)) return;
+    const cue = button.closest('dialog') ? 'detail' : screen === WELCOME ? 'welcome' : screen < 0 ? 'menu' : 'detail';
     try {
       const context = audio.current ??= new AudioContext();
       if (context.state === 'suspended') await context.resume();
-      if (soundEnabled.current && context.state === 'running') playButtonSound(context);
+      if (soundEnabled.current && context.state === 'running') playButtonSound(context, cue);
     } catch { /* Sound support must never interrupt navigation. */ }
   }
   const configDialog = useRef<HTMLDialogElement>(null);
