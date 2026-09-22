@@ -1,0 +1,26 @@
+.menu-emblem{--emblem-accent:#b5efff;width:100%;aspect-ratio:1;color:#b5efff;pointer-events:none;transition:color .5s}
+.menu-emblem[data-theme="1"]{--emblem-accent:#9ceded}
+.menu-emblem[data-theme="2"]{--emblem-accent:#b9c7ff}
+.menu-emblem[data-theme="3"]{--emblem-accent:#95f0ca}
+.menu-emblem[data-theme="4"]{--emblem-accent:#ffe1a1}
+.menu-emblem[data-theme="5"]{--emblem-accent:#ffa8b7}
+.menu-emblem svg{display:block;width:100%;height:100%;overflow:visible;stroke:currentColor;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:miter}
+.menu-emblem .emblem-halo{fill:#83dfff;fill-opacity:.035;stroke:none;animation:emblem-breathe 5s ease-in-out infinite}
+.menu-emblem .emblem-orbit{transform-origin:280px 280px;animation:emblem-orbit 50s linear infinite}
+.menu-emblem .emblem-orbit-line{stroke-opacity:.2;stroke-dasharray:2 10}
+.menu-emblem .emblem-highlight{stroke:var(--emblem-accent);stroke-width:2.8;transition:stroke .5s}
+.menu-emblem .emblem-solid{fill:var(--emblem-accent);stroke:none;transition:fill .5s}
+.menu-emblem .emblem-frame{transform-origin:280px 280px;animation:emblem-drift 9s ease-in-out infinite}
+.menu-emblem .emblem-facet{fill:#071d3e;fill-opacity:.45;stroke-opacity:.4}
+.menu-emblem .emblem-outline{stroke-opacity:.15}
+.menu-emblem .emblem-corners{stroke:var(--emblem-accent);stroke-width:3;transition:stroke .5s}
+.menu-emblem .emblem-symbol{opacity:0;transform:translateY(14px) scale(.88) rotate(-8deg);transform-origin:280px 280px;transition:opacity .28s ease,transform .65s cubic-bezier(.2,.8,.2,1);stroke-width:2.5}
+.menu-emblem .emblem-symbol.is-active{opacity:1;transform:translateY(0) scale(1) rotate(0)}
+.menu-emblem .emblem-node{fill:#102b4b;stroke:var(--emblem-accent);transition:stroke .5s}
+.menu-emblem .emblem-muted{stroke-opacity:.35}
+.menu-emblem .emblem-satellites{stroke-opacity:.5;stroke-width:1}
+@keyframes emblem-orbit{to{transform:rotate(360deg)}}
+@keyframes emblem-drift{0%,100%{transform:translateY(-4px)}50%{transform:translateY(4px)}}
+@keyframes emblem-breathe{0%,100%{fill-opacity:.025}50%{fill-opacity:.07}}
+.menu-emblem[data-reduced="true"] *{animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce){.menu-emblem *{animation:none!important;transition:none!important}}

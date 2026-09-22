@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { flushSync } from 'react-dom';
+import { flushSync, preload } from 'react-dom';
 import gsap from 'gsap';
 import '@fontsource/barlow-condensed/800-italic.css';
 import '@fontsource/barlow-condensed/700.css';
@@ -13,8 +13,11 @@ import { ProjectShowcase } from './ProjectShowcase';
 import { SkillTree } from './SkillTree';
 import { AboutMenu } from './AboutMenu';
 import { ExperienceJourney } from './ExperienceJourney';
+import { MenuEmblem } from './MenuEmblem';
 import { playButtonSound } from './button-sound.mjs';
 import './style.css';
+
+const sectionArtwork = ['about-study', 'experience-journey', 'projects-workshop', 'skills-network', 'achievements-ascent', 'contact-signal'];
 
 function App() {
   const initial = screenFromHash(location.hash);
@@ -99,6 +102,7 @@ function App() {
   function navigate(next: number, fromHistory = false) {
     if (locked.current) { if (fromHistory) pendingHistory.current = next; return; }
     if (next === current.current) return;
+    if (next !== WELCOME) preload(`/assets/${next < 0 ? 'menu-nexus' : sectionArtwork[next]}.png`, { as: 'image' });
     locked.current = true; setBusy(true);
     if (next >= 0) setSelected(next);
     const commit = () => {
@@ -286,9 +290,10 @@ function App() {
   }, [project]);
 
   const active = screen < 0 ? selected : screen;
+  const artwork = screen < 0 ? 'menu-nexus' : sectionArtwork[screen];
   return <div className={`app ${reduced ? 'reduced-motion' : ''}`} onClickCapture={buttonSound}>
-    <div className="stage" ref={stage} data-screen={screen === WELCOME ? 'welcome' : screen < 0 ? 'menu' : screen === 0 ? 'about' : screen === 1 ? 'experience' : screen === 2 ? 'projects' : screen === 3 ? 'skills' : 'section'}>
-      <div className="environment" aria-hidden="true"><div className="city-parallax"><div className="city-drift"><img src="/assets/city.svg" className="city" alt="" /></div></div><div className="light-beam beam-one"/><div className="light-beam beam-two"/><div className="water-shimmer"/><div className="depth"/></div>
+    <div className="stage" ref={stage} data-theme={active} data-screen={screen === WELCOME ? 'welcome' : screen < 0 ? 'menu' : sections[screen].toLowerCase()}>
+      <div className="environment" aria-hidden="true"><div className="city-parallax"><div className="city-drift">{screen !== WELCOME && <img key={artwork} src={`/assets/${artwork}.png`} className="environment-art" alt="" decoding="async"/>}</div></div><div className="light-beam beam-one"/><div className="light-beam beam-two"/><div className="water-shimmer"/><div className="depth"/></div>
       {screen !== WELCOME && <header className="hud"><div className="status-box"><strong>{String(active+1).padStart(2,'0')} <span>/ {String(sections.length).padStart(2,'0')}</span></strong><small>PERSONAL PORTFOLIO</small></div><div className="top-quote">LIFE IS A SERIES OF CHOICES.<span>選択の先に、きっと何かがある。</span></div></header>}
       <div className="scene" ref={scene} aria-busy={busy}>
         {screen !== WELCOME && <div className={`screen-title ${screen >= 0 ? 'section-giant' : ''}`} aria-hidden="true">{screen < 0 ? 'MENU' : sections[screen]}</div>}
@@ -301,6 +306,7 @@ function App() {
             <button className={`welcome-button ${welcomeChoice === 2 ? 'active' : ''}`} onFocus={()=>setWelcomeChoice(2)} onPointerEnter={()=>setWelcomeChoice(2)} onClick={()=>configDialog.current?.showModal()}><span>CONFIG</span><small>MAKE YOURSELF COMFORTABLE</small></button>
           </nav>
         </main> : screen < 0 ? <>
+          <MenuEmblem selected={selected} reduced={reduced}/>
           <h1 className="sr-only">Lucky Ramadhan — Personal portfolio</h1>
           <nav className="main-menu" aria-label="Main menu" ref={menu}>
             <img ref={wedge} className="selection-wedge" src="/assets/selection.svg" alt="" aria-hidden="true"/>
