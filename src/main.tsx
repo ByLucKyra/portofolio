@@ -13,6 +13,7 @@ import { ProjectShowcase } from './ProjectShowcase';
 import { SkillTree } from './SkillTree';
 import { AboutMenu } from './AboutMenu';
 import { ExperienceJourney } from './ExperienceJourney';
+import { playButtonSound } from './button-sound.mjs';
 import './style.css';
 
 function App() {
@@ -24,6 +25,26 @@ function App() {
   const [project, setProject] = useState<number | null>(null);
   const [savedScreen, setSavedScreen] = useState<number | null>(() => readSavedScreen(undefined));
   const [welcomeChoice, setWelcomeChoice] = useState(0);
+  const [sound, setSound] = useState(() => {
+    try { return localStorage.getItem('lucky:sound') !== 'off'; } catch { return true; }
+  });
+  const audio = useRef<AudioContext | null>(null);
+  const soundEnabled = useRef(sound);
+  soundEnabled.current = sound;
+  useEffect(() => {
+    try { localStorage.setItem('lucky:sound', sound ? 'on' : 'off'); } catch { /* Session preference still works. */ }
+  }, [sound]);
+  useEffect(() => () => { void audio.current?.close().catch(() => {}); }, []);
+
+  async function buttonSound(event: React.MouseEvent<HTMLDivElement>) {
+    const button = event.target instanceof Element ? event.target.closest('button') : null;
+    if (!soundEnabled.current || !button || button.disabled || button.getAttribute('aria-disabled') === 'true' || !('AudioContext' in window)) return;
+    try {
+      const context = audio.current ??= new AudioContext();
+      if (context.state === 'suspended') await context.resume();
+      if (soundEnabled.current && context.state === 'running') playButtonSound(context);
+    } catch { /* Sound support must never interrupt navigation. */ }
+  }
   const configDialog = useRef<HTMLDialogElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const scene = useRef<HTMLDivElement>(null);
@@ -234,7 +255,7 @@ function App() {
   }, [project]);
 
   const active = screen < 0 ? selected : screen;
-  return <div className={`app ${reduced ? 'reduced-motion' : ''}`}>
+  return <div className={`app ${reduced ? 'reduced-motion' : ''}`} onClickCapture={buttonSound}>
     <div className="stage" ref={stage} data-screen={screen === WELCOME ? 'welcome' : screen < 0 ? 'menu' : screen === 0 ? 'about' : screen === 1 ? 'experience' : screen === 2 ? 'projects' : screen === 3 ? 'skills' : 'section'}>
       <div className="environment" aria-hidden="true"><div className="city-parallax"><div className="city-drift"><img src="/assets/city.svg" className="city" alt="" /></div></div><div className="light-beam beam-one"/><div className="light-beam beam-two"/><div className="water-shimmer"/><div className="depth"/></div>
       {screen !== WELCOME && <header className="hud"><div className="status-box"><strong>{String(active+1).padStart(2,'0')} <span>/ {String(sections.length).padStart(2,'0')}</span></strong><small>PERSONAL PORTFOLIO</small></div><div className="top-quote">LIFE IS A SERIES OF CHOICES.<span>選択の先に、きっと何かがある。</span></div></header>}
@@ -274,7 +295,7 @@ function App() {
       <span className="section-title-flight" ref={titleFlight} aria-hidden="true">{active === 3 ? 'SKILL' : sections[active]}<span className="title-flight-extra">{active === 0 ? ' ME' : active === 3 ? ' TREE' : ''}</span></span>
     </div>
     <dialog ref={dialog} onClose={()=>setProject(null)} onClick={e=>{if(e.target===dialog.current)setProject(null);}} className="project-dialog">{project !== null && <><p className="eyebrow">PROJECT FILE / 0{project+1}</p><h2>{projects[project].name}</h2><p>{projects[project].detail}</p><p className="draft-note">Preview / final case study pending</p><button autoFocus onClick={()=>setProject(null)}><kbd>Esc</kbd> Close entry</button></>}</dialog>
-    <dialog ref={configDialog} className="config-dialog" aria-labelledby="config-title"><p className="eyebrow">YOUR EXPERIENCE</p><h2 id="config-title">CONFIG</h2><label className="config-option"><span><strong>Reduced motion</strong><small>Keep transitions simple and pause ambient movement.</small></span><input type="checkbox" checked={reduced} onChange={e=>{transition.current?.progress(1);setReduced(e.target.checked);}}/></label><p className="config-help">Navigate with ↑ / ↓ or W / S. Press Enter to confirm, Escape to go back.</p><form method="dialog"><button>DONE <kbd>Esc</kbd></button></form></dialog>
+    <dialog ref={configDialog} className="config-dialog" aria-labelledby="config-title"><p className="eyebrow">YOUR EXPERIENCE</p><h2 id="config-title">CONFIG</h2><label className="config-option"><span><strong>Reduced motion</strong><small>Keep transitions simple and pause ambient movement.</small></span><input type="checkbox" checked={reduced} onChange={e=>{transition.current?.progress(1);setReduced(e.target.checked);}}/></label><label className="config-option"><span><strong>Button sounds</strong><small>Play a short sound when a button is activated.</small></span><input type="checkbox" checked={sound} onChange={e=>setSound(e.target.checked)}/></label><p className="config-help">Navigate with ↑ / ↓ or W / S. Press Enter to confirm, Escape to go back.</p><form method="dialog"><button>DONE <kbd>Esc</kbd></button></form></dialog>
   </div>;
 }
 

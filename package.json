@@ -1,6 +1,6 @@
 {
   "name": "lucky-portfolio", "private": true, "version": "0.1.0", "type": "module",
-  "scripts": { "dev": "vite --host 127.0.0.1", "build": "tsc --noEmit && vite build", "preview": "vite preview --host 127.0.0.1", "test": "node --test tests/navigation.test.mjs" },
+  "scripts": { "dev": "vite --host 127.0.0.1", "build": "tsc --noEmit && vite build", "preview": "vite preview --host 127.0.0.1", "test": "node --test tests/navigation.test.mjs tests/button-sound.test.mjs" },
   "dependencies": { "react": "^19.0.0", "react-dom": "^19.0.0", "gsap": "^3.13.0", "@fontsource/barlow-condensed": "^5.2.0", "@fontsource/inter": "^5.2.0", "@fontsource/anton": "^5.2.0" },
   "devDependencies": { "vite": "^6.1.0", "typescript": "^5.7.0", "@types/react": "^19.0.0", "@types/react-dom": "^19.0.0" }
 }
