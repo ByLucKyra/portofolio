@@ -14,6 +14,8 @@ import { SkillTree } from './SkillTree';
 import { AboutMenu } from './AboutMenu';
 import { ExperienceJourney } from './ExperienceJourney';
 import { MenuEmblem } from './MenuEmblem';
+import { EnvironmentElements } from './EnvironmentElements';
+import { attachParallax } from './parallax.mjs';
 import { playButtonSound } from './button-sound.mjs';
 import './style.css';
 
@@ -223,17 +225,23 @@ function App() {
   useEffect(() => {
     if (reduced) return;
     const ctx = gsap.context(() => {
-      gsap.to('.city-drift', { y: -12, scale: 1.025, duration: 9, repeat: -1, yoyo: true, ease: 'sine.inOut' });
       gsap.to('.light-beam', { xPercent: 30, opacity: .24, duration: 6, stagger: 1.8, repeat: -1, yoyo: true, ease: 'sine.inOut' });
     }, stage);
-    const xTo = gsap.quickTo('.city-parallax', 'x', { duration: 1.4, ease: 'power2.out' });
-    const yTo = gsap.quickTo('.city-parallax', 'y', { duration: 1.4, ease: 'power2.out' });
-    const el = stage.current!;
-    const move = (e: PointerEvent) => { if (e.pointerType !== 'mouse') return; const r = el.getBoundingClientRect(); xTo((e.clientX-r.left-r.width/2)*.009); yTo((e.clientY-r.top-r.height/2)*.009); };
-    const leave = () => { xTo(0); yTo(0); };
-    el.addEventListener('pointermove', move); el.addEventListener('pointerleave', leave);
-    return () => { ctx.revert(); xTo.tween.kill(); yTo.tween.kill(); gsap.set('.city-parallax', {x:0,y:0}); el.removeEventListener('pointermove', move); el.removeEventListener('pointerleave', leave); };
+    return () => ctx.revert();
   }, [reduced]);
+
+  useEffect(() => {
+    if (reduced || screen === WELCOME) return;
+    return attachParallax(stage.current!);
+  }, [screen, reduced]);
+
+  useEffect(() => {
+    const camera = gsap.to(stage.current, {
+      '--focus-y': reduced || screen !== -1 ? 0 : selected / (sections.length - 1) * 2 - 1,
+      duration: reduced ? 0 : .75, ease: 'power3.out',
+    });
+    return () => { camera.kill(); };
+  }, [screen, selected, reduced]);
 
   useLayoutEffect(() => {
     if (screen >= 0 || !menu.current || !wedge.current) return;
@@ -293,7 +301,12 @@ function App() {
   const artwork = screen < 0 ? 'menu-nexus' : sectionArtwork[screen];
   return <div className={`app ${reduced ? 'reduced-motion' : ''}`} onClickCapture={buttonSound}>
     <div className="stage" ref={stage} data-theme={active} data-screen={screen === WELCOME ? 'welcome' : screen < 0 ? 'menu' : sections[screen].toLowerCase()}>
-      <div className="environment" aria-hidden="true"><div className="city-parallax"><div className="city-drift">{screen !== WELCOME && <img key={artwork} src={`/assets/${artwork}.png`} className="environment-art" alt="" decoding="async"/>}</div></div><div className="light-beam beam-one"/><div className="light-beam beam-two"/><div className="water-shimmer"/><div className="depth"/></div>
+      <div className="environment" aria-hidden="true">
+        <div className="environment-backdrop">{screen !== WELCOME && <img key={artwork} src={`/assets/${artwork}.png`} className="environment-art" alt="" decoding="async"/>}</div>
+        <div className="light-beam beam-one"/><div className="light-beam beam-two"/><div className="water-shimmer"/>
+        {screen !== WELCOME && <EnvironmentElements theme={active}/>}
+        <div className="depth"/>
+      </div>
       {screen !== WELCOME && <header className="hud"><div className="status-box"><strong>{String(active+1).padStart(2,'0')} <span>/ {String(sections.length).padStart(2,'0')}</span></strong><small>PERSONAL PORTFOLIO</small></div><div className="top-quote">LIFE IS A SERIES OF CHOICES.<span>選択の先に、きっと何かがある。</span></div></header>}
       <div className="scene" ref={scene} aria-busy={busy}>
         {screen !== WELCOME && <div className={`screen-title ${screen >= 0 ? 'section-giant' : ''}`} aria-hidden="true">{screen < 0 ? 'MENU' : sections[screen]}</div>}

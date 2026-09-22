@@ -1,0 +1,23 @@
+.environment-elements{--depth-scale:1;--element-accent:#abeaff;position:absolute;inset:0 0 auto;height:max(110svh,56rem);overflow:hidden;pointer-events:none;color:var(--element-accent);mask-image:linear-gradient(#000 72%,transparent)}
+.environment-elements[data-theme="1"]{--element-accent:#8ce8e4}
+.environment-elements[data-theme="2"]{--element-accent:#b0bcff}
+.environment-elements[data-theme="3"]{--element-accent:#98edcf}
+.environment-elements[data-theme="4"]{--element-accent:#ffe1a0}
+.environment-elements[data-theme="5"]{--element-accent:#ffa9bd}
+.environment-elements .parallax-layer{position:absolute;inset:-6%;will-change:transform}
+.environment-elements svg{display:block;width:100%;height:100%;fill:none;stroke-linejoin:bevel;stroke-linecap:square}
+.environment-elements .elements-far{opacity:.38;transform:translate3d(calc((var(--view-x,0) + var(--focus-x,0)*.5)*12px*var(--depth-scale)),calc((var(--view-y,0) + var(--focus-y,0)*.5)*12px*var(--depth-scale) + var(--scroll-shift,0px)*-.025),0)}
+.environment-elements .elements-middle{opacity:.74;transform:translate3d(calc((var(--view-x,0) + var(--focus-x,0)*.65)*30px*var(--depth-scale)),calc((var(--view-y,0) + var(--focus-y,0)*.65)*30px*var(--depth-scale) + var(--scroll-shift,0px)*-.07),0)}
+.environment-elements .elements-near{opacity:.88;transform:translate3d(calc((var(--view-x,0) + var(--focus-x,0)*.8)*55px*var(--depth-scale)),calc((var(--view-y,0) + var(--focus-y,0)*.8)*55px*var(--depth-scale) + var(--scroll-shift,0px)*.12),0)}
+.environment-elements .element-glass{fill:#061c40;fill-opacity:.82;stroke:#4589bb;stroke-opacity:.3;stroke-width:1}
+.environment-elements .element-face{fill:#438ad0;fill-opacity:.33}
+.environment-elements .element-reflection{fill:var(--element-accent);fill-opacity:.19}
+.environment-elements .element-edge{stroke:var(--element-accent);stroke-opacity:.6;stroke-width:1.5}
+.environment-elements .element-line{stroke:var(--element-accent);stroke-opacity:.35;stroke-width:1}
+.environment-elements .element-spark{fill:var(--element-accent);fill-opacity:.72}
+.element-architecture{animation:element-arrive .65s ease-out both}
+@keyframes element-arrive{from{opacity:0}to{opacity:1}}
+.reduced-motion .environment-elements .parallax-layer{transform:none;will-change:auto}
+.reduced-motion .element-architecture{animation:none}
+@media(max-width:700px){.environment-elements{--depth-scale:.5}.environment-elements .elements-middle{opacity:.48}.environment-elements .elements-near{opacity:.64}}
+@media(prefers-reduced-motion:reduce){.environment-elements .parallax-layer{transform:none;will-change:auto}.element-architecture{animation:none}}
