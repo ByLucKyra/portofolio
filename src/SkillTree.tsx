@@ -35,7 +35,7 @@ export function SkillTree({ reduced, disabled }: { reduced: boolean; disabled: b
     if (reduced) return;
     const context = gsap.context(() => {
       gsap.timeline()
-        .from('.skill-connector', { strokeDashoffset: 1, duration: .6, stagger: .025, ease: 'power2.out' })
+        .fromTo('.skill-connector', { opacity: 0 }, { opacity: 1, duration: .6, stagger: .025, ease: 'power2.out', clearProps: 'opacity' })
         .from('.skill-node', { scale: .65, opacity: 0, duration: .4, stagger: .035, ease: 'back.out(1.3)' }, .1);
     }, root);
     return () => context.revert();
@@ -69,7 +69,7 @@ export function SkillTree({ reduced, disabled }: { reduced: boolean; disabled: b
                 // ponytail: two rows cover the current 2–4 skills; derive rows when a branch grows.
                 const x = skillIndex % 2 === 0 ? 22 : 78;
                 const y = skillIndex < 2 ? 48 : 83;
-                return <path key={node.name} className={`skill-connector ${selection.group === groupIndex && selection.skill === skillIndex ? 'is-active' : ''}`} d={`M 50 14 V ${y - 13} L ${x} ${y}`} pathLength="1"/>;
+                return <path key={node.name} className={`skill-connector ${selection.group === groupIndex && selection.skill === skillIndex ? 'is-active' : ''}`} d={`M 50 14 V ${y - 13} L ${x} ${y}`}/>;
               })}
             </svg>
             <div className="skill-root" aria-hidden="true">{item.mark}</div>

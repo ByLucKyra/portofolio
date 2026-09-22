@@ -40,20 +40,15 @@
 .identity-stats small{font-size:.5rem;color:#bfe9ff;letter-spacing:.08em}
 .identity-stats strong{font:700 1.3rem 'Barlow Condensed'}
 .identity-stats>p{font-size:.55rem;line-height:1.5;letter-spacing:0}
-.party-rail{position:absolute;right:4vw;top:19vh;width:3.5rem;display:grid;gap:3rem;transform:rotate(-13deg);pointer-events:none}
-.party-rail>b{font:700 .75rem 'Barlow Condensed';text-align:center}
-.gauge{height:8px;background:#020b26;padding:2px;position:relative}
-.gauge i{display:block;width:var(--gauge);height:3px;background:#ffe03c}
-.gauge span{position:absolute;top:10px;left:1px;width:var(--gauge);height:2px;background:#75e9fa}
 .reduced-motion .menu-button span,.reduced-motion .menu-button span::after{transition:none}
-@media(max-width:1000px){.main-menu{margin-left:20%;width:72vw}.menu-description{margin-left:25%}.identity-stats>p{display:none}.party-rail{right:2vw;width:2rem}}
+@media(max-width:1000px){.main-menu{margin-left:20%;width:72vw}.menu-description{margin-left:25%}.identity-stats>p{display:none}}
 @media(max-width:700px){
   .stage[data-screen=menu] .scene{padding:7rem 1.2rem 9rem}
   .main-menu{margin:3rem 0 0 4%;width:88%;padding-bottom:1rem}
   .menu-button{height:clamp(43px,11.7vw,66px);font-size:clamp(35px,11vw,62px)}
   .menu-button:nth-of-type(1){--indent:.4rem}.menu-button:nth-of-type(2){--indent:1.2rem}.menu-button:nth-of-type(3){--indent:.4rem}.menu-button:nth-of-type(4){--indent:2.5rem}.menu-button:nth-of-type(5){--indent:0rem;font-size:clamp(30px,9vw,53px)}.menu-button:nth-of-type(6){--indent:2.9rem}.menu-button:nth-of-type(7){--indent:1.8rem}
   .menu-description{margin:2rem 0 0 .5rem;width:90%;font-size:.75rem}
-  .identity{left:1.5rem;bottom:4.4rem;max-width:80%;}.identity>p{font-size:.65rem}.identity>span{font-size:.6rem}.identity-stats,.party-rail{display:none}
+  .identity{left:1.5rem;bottom:4.4rem;max-width:80%;}.identity>p{font-size:.65rem}.identity>span{font-size:.6rem}.identity-stats{display:none}
   .key-hints{display:flex}.key-hints .move-hint{display:none}.controls{bottom:1.2rem}.controls button{min-height:44px}.scene:has(.section-content){padding-bottom:11rem}
 }
 @media(max-height:650px) and (min-width:701px){.main-menu{margin-top:6vh}.menu-button{height:6.5vh;font-size:9vh}.menu-button:nth-of-type(5){font-size:8vh}.identity{bottom:4rem}.identity-stats{margin-top:.7rem}.menu-description{margin-top:1rem}}
@@ -65,7 +60,7 @@
 .stage[data-screen=experience] .section-heading h1{position:relative;isolation:isolate;width:max-content;max-width:100%;font:800 italic clamp(3rem,5.5vw,6rem)/1.1 'Barlow Condensed';letter-spacing:-.03em;color:#020916;transform:rotate(-7deg) skewX(-8deg);padding:0 .6rem;margin-bottom:1.7rem}
 .stage[data-screen=experience] .section-heading h1::before{content:'';position:absolute;inset:-.05em -.45em -.08em -.65em;z-index:-1;background:#f5fcff;clip-path:polygon(0 27%,100% 0,93% 86%,4% 100%);border-bottom:7px solid #ff2855}
 .stage[data-screen=experience] .section-heading p{font-size:.68rem;letter-spacing:.25em;margin:0}
-.stage[data-screen=experience] .section-giant,.stage[data-screen=experience] .party-rail,.stage[data-screen=experience] .identity-stats{display:none}
+.stage[data-screen=experience] .section-giant,.stage[data-screen=experience] .identity-stats{display:none}
 .stage[data-screen=experience] .depth{background:linear-gradient(#06143155,#03091ee6 60%)}
 .experience-journey{position:relative;min-width:0;background:#080d23f5;border:1px solid #6598eb44;box-shadow:0 16px 60px #02071e55}
 .experience-journey::before,.experience-journey::after{content:'';position:absolute;z-index:2;left:1.5rem;right:1.5rem;height:3px;background:linear-gradient(90deg,#3443ff,#66edff);clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 100%,0 100%)}
@@ -332,7 +327,7 @@
 .skill-graph{position:relative;height:17rem;margin-top:.4rem}
 .skill-graph[data-compact=true]{height:12.5rem}
 .skill-connections{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
-.skill-connector{fill:none;stroke:#8fd8fa66;stroke-width:1.3;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:0}
+.skill-connector{fill:none;stroke:#8fd8fa66;stroke-width:1.3;vector-effect:non-scaling-stroke;stroke-dasharray:none;stroke-linejoin:round;stroke-linecap:round}
 .skill-connector.is-active{stroke:var(--branch-color);stroke-width:2;filter:drop-shadow(0 0 3px var(--branch-color))}
 .skill-root{position:absolute;left:50%;top:14%;transform:translate(-50%,-50%);width:3.2rem;height:3.2rem;border:2px solid var(--branch-color);border-radius:50%;background:#061337;color:var(--branch-color);display:grid;place-items:center;font:700 1.2rem 'Barlow Condensed';box-shadow:0 0 15px #8fe6ff33}
 .skill-node{position:absolute;transform:translate(-50%,-22px);display:flex;flex-direction:column;align-items:center;gap:.45rem;width:6.6rem;min-height:44px;padding:0;color:#c5dcec}
