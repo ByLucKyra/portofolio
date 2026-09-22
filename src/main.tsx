@@ -26,6 +26,7 @@ function App() {
   const [screen, setScreen] = useState(initial);
   const [selected, setSelected] = useState(Math.max(0, initial));
   const [busy, setBusy] = useState(false);
+  const [outgoingArtwork, setOutgoingArtwork] = useState<string | null>(null);
   const [reduced, setReduced] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [project, setProject] = useState<number | null>(null);
   const [savedScreen, setSavedScreen] = useState<number | null>(() => readSavedScreen(undefined));
@@ -101,74 +102,95 @@ function App() {
   selection.current = selected;
   current.current = screen;
 
-  function navigate(next: number, fromHistory = false) {
+  function finishNavigation() {
+    if (transition.current?.isActive() || entrance.current?.isActive()) return;
+    locked.current = false; setBusy(false);
+    const pending = pendingHistory.current; pendingHistory.current = null;
+    if (pending !== null && pending !== current.current) { navigateRef.current(pending, true); return; }
+    const target = current.current === WELCOME ? scene.current?.querySelector<HTMLButtonElement>('.welcome-button')
+      : current.current < 0 ? menu.current?.querySelector<HTMLButtonElement>(`[data-index="${selection.current}"]`)
+      : scene.current?.querySelector<HTMLElement>('h1');
+    target?.focus({ preventScroll: true });
+  }
+
+  function navigate(next: number, fromHistory = false, source?: HTMLElement) {
     if (locked.current) { if (fromHistory) pendingHistory.current = next; return; }
     if (next === current.current) return;
     if (next !== WELCOME) preload(`/assets/${next < 0 ? 'menu-nexus' : sectionArtwork[next]}.png`, { as: 'image' });
     locked.current = true; setBusy(true);
-    if (next >= 0) setSelected(next);
+    if (next >= 0) flushSync(() => setSelected(next));
+    const sourceArtwork = current.current < 0 ? 'menu-nexus' : sectionArtwork[current.current];
     const commit = () => {
       if (!fromHistory) history.pushState(null, '', screenHash(next));
-      flushSync(() => { setProject(null); setScreen(next); });
+      flushSync(() => { setProject(null); if (titleHandoff.current) setOutgoingArtwork(sourceArtwork); setScreen(next); });
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      if (stage.current) { stage.current.scrollTop = 0; stage.current.scrollLeft = 0; }
     };
     entrance.current?.kill();
     if (reduced) { commit(); return; }
-    const tl = gsap.timeline(); transition.current = tl;
-    const chosen = current.current === -1 && next >= 0 && !fromHistory
-      ? menu.current?.querySelector<HTMLElement>(`[data-index="${next}"] span`) : null;
+    const tl = gsap.timeline({ onComplete: finishNavigation }); transition.current = tl;
+    const chosen = next >= 0 && !fromHistory ? source ?? (current.current === -1
+      ? menu.current?.querySelector<HTMLElement>(`[data-index="${next}"] span`) : null) : null;
     titleHandoff.current = !!chosen;
-    if (chosen && wipe.current) {
+    if (chosen && titleFlight.current) {
       const rect = chosen.getBoundingClientRect();
-      const x = (value: number) => `${value / window.innerWidth * 100}%`;
-      const y = (value: number) => `${value / window.innerHeight * 100}%`;
-      const start = `polygon(${x(rect.left - 30)} ${y(rect.top + rect.height * .3)}, ${x(rect.right + 35)} ${y(rect.top - 20)}, ${x(rect.right)} ${y(rect.bottom)}, ${x(rect.left - 20)} ${y(rect.bottom + 10)})`;
-      const title = wipe.current.querySelector('span')!;
-      title.textContent = sections[next];
-      gsap.set(wipe.current, { x: 0, xPercent: 0, clipPath: start, backgroundColor: '#f5fcff' });
-      gsap.set(title, { position: 'absolute', left: 0, top: 0, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, xPercent: -50, yPercent: -50, fontFamily: 'Barlow Condensed', fontWeight: 800, fontStyle: 'italic', fontSize: getComputedStyle(chosen).fontSize, rotation: -8 });
-      tl.to(title, { scale: .94, duration: .12, ease: 'power2.in' })
-        .to(wipe.current, { clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)', duration: .58, ease: 'power3.inOut' })
-        .to(title, { x: window.innerWidth / 2, y: window.innerHeight / 2, rotation: 0, scale: 1.15, duration: .58, ease: 'power3.inOut' }, '<')
-        .call(commit);
-      if (titleHandoff.current) {
-        const destination = () => scene.current!.querySelector<HTMLElement>('.section-title-word')!;
-        tl.call(() => {
-          const bounds = title.getBoundingClientRect();
-          const style = getComputedStyle(title);
-          gsap.set(titleFlight.current, { '--banner-tail': '0px', visibility: 'visible', opacity: 1, x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2, xPercent: -50, yPercent: -50, fontSize: parseFloat(style.fontSize) * 1.15, rotation: 0, skewX: 0 });
-          gsap.set('.title-flight-extra', { opacity: 0, x: -24, clipPath: 'inset(0 100% 0 0)' });
-          gsap.set(title, { opacity: 0 });
-        }).addLabel('title-flight')
-          .to(wipe.current, { xPercent: 130, duration: .65, ease: 'power3.inOut' })
-          .to(titleFlight.current, {
-            x: () => { const r = destination().getBoundingClientRect(); return r.left + r.width / 2; },
-            y: () => { const r = destination().getBoundingClientRect(); return r.top + r.height / 2; },
-            fontSize: () => getComputedStyle(destination()).fontSize,
-            rotation: -7, skewX: -8, duration: .8, ease: 'power3.inOut',
-          }, '<')
-          .to(titleFlight.current, {
-            '--banner-tail': () => {
-              const word = destination();
-              const heading = word.parentElement!;
-              const style = getComputedStyle(heading);
-              return `${Math.max(0, heading.offsetWidth - word.offsetWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight))}px`;
-            },
-            duration: .45, ease: 'power3.inOut',
-          }, 'title-flight+=.55')
-          .to('.title-flight-extra', { opacity: 1, x: 0, clipPath: 'inset(0 0% 0 0)', duration: .45, ease: 'power3.out' }, 'title-flight+=.55')
-          .call(() => {
-            gsap.set(destination().parentElement!.querySelectorAll('span'), { visibility: 'visible' });
-            gsap.set(destination().parentElement, { '--title-banner-opacity': 1 });
-          })
-          .set(titleFlight.current, { visibility: 'hidden' })
-          .call(() => { titleHandoff.current = false; });
-      } else {
-        tl.to(title, { opacity: 0, duration: .18 }, '+=.1')
-        .to(wipe.current, { xPercent: 130, duration: .5, ease: 'power3.inOut' }, '<')
-      }
-      tl.set(wipe.current, { clearProps: 'clipPath,backgroundColor' })
-        .set(title, { clearProps: 'all' })
-        .call(() => { title.textContent = 'MAKE YOUR CHOICE.'; });
+      const style = getComputedStyle(chosen);
+      const flight = titleFlight.current;
+      const suffix = flight.querySelector<HTMLElement>('.title-flight-suffix')!;
+      const extra = flight.querySelector<HTMLElement>('.title-flight-extra')!;
+      const rotation = Number(gsap.getProperty(chosen, 'rotation'));
+      const scaleX = Number(gsap.getProperty(chosen, 'scaleX'));
+      const elements = stage.current!.querySelector('.environment-elements');
+      const destination = () => scene.current!.querySelector<HTMLElement>('.section-title-word')!;
+      gsap.set(flight, { visibility: 'visible', opacity: 1, fontSize: style.fontSize, lineHeight: style.lineHeight, letterSpacing: style.letterSpacing,
+        rotation, skewX: Number(gsap.getProperty(chosen, 'skewX')), scaleX, scaleY: Number(gsap.getProperty(chosen, 'scaleY')), xPercent: -50, yPercent: -50 });
+      gsap.set(suffix, { opacity: 1, x: 0 });
+      gsap.set(extra, { opacity: 0, x: -18, clipPath: 'inset(0 100% 0 0)' });
+      const suffixOffset = suffix.offsetWidth * scaleX / 2;
+      gsap.set(flight, { '--banner-tail': `${suffix.offsetWidth}px`, '--banner-cut': 'polygon(0% 80%,100% 0%,92% 82%,3% 100%)',
+        x: rect.left + rect.width / 2 - Math.cos(rotation * Math.PI / 180) * suffixOffset,
+        y: rect.top + rect.height / 2 - Math.sin(rotation * Math.PI / 180) * suffixOffset });
+      gsap.set(chosen, { visibility: 'hidden' });
+      if (current.current === -1) gsap.set(wedge.current, { visibility: 'hidden' });
+      // The title stays visible while the world passes behind it at different depths.
+      tl.to(scene.current, { x: -32, opacity: 0, duration: .28, ease: 'power2.in' }, 0)
+        .to(stage.current, { '--scene-travel': -1, duration: .3, ease: 'power2.in' }, 0)
+        .to(elements, { opacity: 0, duration: .16 }, .14)
+        .call(commit, [], .3)
+        .set(stage.current, { '--scene-travel': 1 }, .3)
+        .to(stage.current, { '--scene-travel': 0, duration: .85, ease: 'power3.out' }, .3)
+        .to(elements, { opacity: 1, duration: .6, ease: 'power2.out' }, .3)
+        .to(flight, {
+          x: () => { const r = destination().getBoundingClientRect(); return r.left + r.width / 2; },
+          y: () => { const r = destination().getBoundingClientRect(); return r.top + r.height / 2; },
+          fontSize: () => getComputedStyle(destination()).fontSize,
+          lineHeight: () => getComputedStyle(destination()).lineHeight,
+          letterSpacing: () => getComputedStyle(destination()).letterSpacing,
+          rotation: -7, skewX: -8, scaleX: 1, scaleY: 1,
+          '--banner-cut': 'polygon(0% 26%,100% 0%,92% 82%,3% 100%)',
+          duration: .85, ease: 'power3.inOut',
+        }, .3)
+        .to(suffix, { opacity: 0, x: 12, duration: .2 }, .38)
+        .to(flight, {
+          '--banner-tail': () => {
+            const word = destination();
+            const heading = word.parentElement!;
+            const padding = getComputedStyle(heading);
+            return `${Math.max(0, heading.offsetWidth - word.offsetWidth - parseFloat(padding.paddingLeft) - parseFloat(padding.paddingRight))}px`;
+          }, duration: .4, ease: 'power3.inOut',
+        }, .65)
+        .to(extra, { opacity: 1, x: 0, clipPath: 'inset(0 0% 0 0)', duration: .4, ease: 'power3.out' }, .65)
+        .call(() => {
+          gsap.set(destination().parentElement!.querySelectorAll('span'), { visibility: 'visible' });
+          gsap.set(destination().parentElement, { '--title-banner-opacity': 1 });
+          gsap.set(flight, { visibility: 'hidden' });
+          gsap.set(stage.current, { '--scene-travel': 0 });
+          gsap.set(elements, { clearProps: 'opacity' });
+          gsap.set(chosen, { clearProps: 'visibility' });
+          if (wedge.current) gsap.set(wedge.current, { clearProps: 'visibility' });
+          setOutgoingArtwork(null);
+          titleHandoff.current = false;
+        });
       return;
     }
     tl.to(scene.current, { x: next < 0 ? 70 : -70, opacity: 0, duration: .2, ease: 'power2.in' })
@@ -179,18 +201,11 @@ function App() {
   navigateRef.current = navigate;
 
   useLayoutEffect(() => {
-    const finish = () => {
-      locked.current = false; setBusy(false);
-      const pending = pendingHistory.current; pendingHistory.current = null;
-      if (pending !== null && pending !== current.current) { navigateRef.current(pending, true); return; }
-      const target = screen === WELCOME ? scene.current?.querySelector<HTMLButtonElement>('.welcome-button') : screen < 0 ? menu.current?.querySelector<HTMLButtonElement>(`[data-index="${selection.current}"]`) : scene.current?.querySelector<HTMLElement>('h1');
-      target?.focus({ preventScroll: true });
-    };
     const ctx = gsap.context(() => {
       gsap.set(scene.current, { x: 0, opacity: 1 });
       if (screen === WELCOME && stage.current) { stage.current.scrollTop = 0; stage.current.scrollLeft = 0; }
-      if (reduced) { gsap.set(wipe.current, { x: 0, xPercent: 130 }); finish(); return; }
-      const tl = gsap.timeline({ onComplete: finish }); entrance.current = tl;
+      if (reduced) { gsap.set(wipe.current, { x: 0, xPercent: 130 }); finishNavigation(); return; }
+      const tl = gsap.timeline({ onComplete: finishNavigation }); entrance.current = tl;
       if (screen === WELCOME) {
         const mobile = window.matchMedia('(max-width:700px)').matches;
         tl.from('.welcome-brand', { y: -40, opacity: 0, duration: 1.1, ease: 'power3.out' }, .15)
@@ -202,6 +217,7 @@ function App() {
         if (screen >= 0 && titleHandoff.current) {
           gsap.set('.section-title-word,.section-title-extra', { visibility: 'hidden' });
           gsap.set('.section-heading h1', { '--title-banner-opacity': 0 });
+          tl.from('.section-body', { x: 55, opacity: 0, duration: .65, ease: 'power3.out' }, .18);
           tl.from('.section-heading p', { y: 12, opacity: 0, duration: .35 }, .8);
         }
         if (screen === -1) tl.from('.menu-button', { x: 180, opacity: 0, duration: .6, stagger: .045, ease: 'power4.out' }, .13);
@@ -233,7 +249,7 @@ function App() {
   useEffect(() => {
     if (reduced || screen === WELCOME) return;
     return attachParallax(stage.current!);
-  }, [screen, reduced]);
+  }, [screen === WELCOME, reduced]);
 
   useEffect(() => {
     const camera = gsap.to(stage.current, {
@@ -302,7 +318,7 @@ function App() {
   return <div className={`app ${reduced ? 'reduced-motion' : ''}`} onClickCapture={buttonSound}>
     <div className="stage" ref={stage} data-theme={active} data-screen={screen === WELCOME ? 'welcome' : screen < 0 ? 'menu' : sections[screen].toLowerCase()}>
       <div className="environment" aria-hidden="true">
-        <div className="environment-backdrop">{screen !== WELCOME && <img key={artwork} src={`/assets/${artwork}.png`} className="environment-art" alt="" decoding="async"/>}</div>
+        <div className="environment-backdrop">{screen !== WELCOME && <img key={artwork} src={`/assets/${artwork}.png`} className="environment-art" alt="" decoding="async"/>}{outgoingArtwork && <img src={`/assets/${outgoingArtwork}.png`} className="environment-art environment-art-outgoing" alt=""/>}</div>
         <div className="light-beam beam-one"/><div className="light-beam beam-two"/><div className="water-shimmer"/>
         {screen !== WELCOME && <EnvironmentElements theme={active}/>}
         <div className="depth"/>
@@ -340,9 +356,9 @@ function App() {
         {screen !== WELCOME && <><aside className="identity reveal"><p>LUCKY RAMADHAN</p><span>Software Developer</span><div className="identity-stats"><div><small>ARCANA</small><strong>Developer</strong></div><div><small>CHAPTER</small><strong>{String(active+1).padStart(2,'0')}</strong></div><p>Building a better<br/>tomorrow, one line<br/>at a time.</p></div></aside>
         </>}
       </div>
-      <footer className="controls"><div className="audio-controls"><button className="motion-control" aria-pressed={reduced} onClick={()=>{transition.current?.progress(1);setReduced(!reduced);}}>{reduced ? 'MOTION: REDUCED' : 'MOTION: FULL'}</button><button className="motion-control" aria-pressed={music} onClick={()=>setMusic(!music)}>{music ? 'MUSIC: ON' : 'MUSIC: OFF'}</button></div>{screen >= 0 && <nav ref={sectionNav} aria-label="Sections" className="section-nav">{sections.map((name,i)=><button key={name} aria-current={screen===i?'page':undefined} onClick={()=>navigate(i)}><span>{name}</span></button>)}</nav>}<div className="key-hints">{screen === WELCOME ? <span><kbd>↑</kbd><kbd>↓</kbd> Select <kbd>↵</kbd> Confirm</span> : screen < 0 ? <><button onClick={()=>navigate(WELCOME)}><kbd>Esc</kbd> Title</button><span className="move-hint"><kbd>↑</kbd><kbd>↓</kbd> Select</span><button onClick={()=>navigate(selected)}><kbd>↵</kbd> Confirm</button></> : <button onClick={()=>navigate(-1)}><kbd>Esc</kbd> Back</button>}</div></footer>
+      <footer className="controls"><div className="audio-controls"><button className="motion-control" aria-pressed={reduced} onClick={()=>{transition.current?.progress(1);setReduced(!reduced);}}>{reduced ? 'MOTION: REDUCED' : 'MOTION: FULL'}</button><button className="motion-control" aria-pressed={music} onClick={()=>setMusic(!music)}>{music ? 'MUSIC: ON' : 'MUSIC: OFF'}</button></div>{screen >= 0 && <nav ref={sectionNav} aria-label="Sections" className="section-nav">{sections.map((name,i)=><button key={name} aria-current={screen===i?'page':undefined} onClick={event=>navigate(i, false, event.currentTarget.querySelector<HTMLElement>('span') ?? undefined)}><span>{name}</span></button>)}</nav>}<div className="key-hints">{screen === WELCOME ? <span><kbd>↑</kbd><kbd>↓</kbd> Select <kbd>↵</kbd> Confirm</span> : screen < 0 ? <><button onClick={()=>navigate(WELCOME)}><kbd>Esc</kbd> Title</button><span className="move-hint"><kbd>↑</kbd><kbd>↓</kbd> Select</span><button onClick={()=>navigate(selected)}><kbd>↵</kbd> Confirm</button></> : <button onClick={()=>navigate(-1)}><kbd>Esc</kbd> Back</button>}</div></footer>
       <div className="transition-wipe" ref={wipe} aria-hidden="true"><span>MAKE YOUR CHOICE.</span></div>
-      <span className="section-title-flight" ref={titleFlight} aria-hidden="true">{active === 3 ? 'SKILL' : sections[active]}<span className="title-flight-extra">{active === 0 ? ' ME' : active === 3 ? ' TREE' : ''}</span></span>
+      <span className="section-title-flight" ref={titleFlight} aria-hidden="true">{selected === 3 ? 'SKILL' : sections[selected]}<span className="title-flight-suffix">{selected === 3 ? 'S' : ''}</span><span className="title-flight-extra">{selected === 0 ? ' ME' : selected === 3 ? ' TREE' : ''}</span></span>
     </div>
     <dialog ref={dialog} onClose={()=>setProject(null)} onClick={e=>{if(e.target===dialog.current)setProject(null);}} className="project-dialog">{project !== null && <><p className="eyebrow">PROJECT FILE / 0{project+1}</p><h2>{projects[project].name}</h2><p>{projects[project].detail}</p><p className="draft-note">Preview / final case study pending</p><button autoFocus onClick={()=>setProject(null)}><kbd>Esc</kbd> Close entry</button></>}</dialog>
     <dialog ref={configDialog} className="config-dialog" aria-labelledby="config-title"><p className="eyebrow">YOUR EXPERIENCE</p><h2 id="config-title">CONFIG</h2><label className="config-option"><span><strong>Reduced motion</strong><small>Keep transitions simple and pause ambient movement.</small></span><input type="checkbox" checked={reduced} onChange={e=>{transition.current?.progress(1);setReduced(e.target.checked);}}/></label><label className="config-option"><span><strong>Button sounds</strong><small>Play a short sound when a button is activated.</small></span><input type="checkbox" checked={sound} onChange={e=>setSound(e.target.checked)}/></label><label className="config-option"><span><strong>Soundtrack</strong><small>Blue Hour · Original JRPG-inspired instrumental</small></span><input type="checkbox" checked={music} onChange={e=>{musicUnlocked.current=true;setMusic(e.target.checked);}}/></label><label className="config-option music-volume"><span><strong>Music volume</strong><small>{Math.round(musicVolume*100)}%</small></span><input type="range" min="0" max="100" value={Math.round(musicVolume*100)} onChange={e=>setMusicVolume(Number(e.target.value)/100)}/></label><p className="config-help">Navigate with ↑ / ↓ or W / S. Press Enter to confirm, Escape to go back.</p><form method="dialog"><button>DONE <kbd>Esc</kbd></button></form></dialog>
