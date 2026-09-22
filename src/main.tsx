@@ -21,6 +21,14 @@ import './style.css';
 
 const sectionArtwork = ['about-study', 'experience-journey', 'projects-workshop', 'skills-network', 'achievements-ascent', 'contact-signal'];
 
+function SelectionSweep({ className, ref }: { className: string; ref: React.Ref<SVGSVGElement> }) {
+  return <svg ref={ref} className={className} viewBox="0 0 625 215" preserveAspectRatio="none" aria-hidden="true">
+    <path className="sweep-pink" d="M0 193L625 0L468 157L0 193Z" fill="#F02E61"/>
+    <path className="sweep-white" d="M34 181L585 5L450 147L34 181Z" fill="#fff"/>
+    <path className="sweep-red" d="M0 193L348 94L326 132L0 193Z" fill="#FF242E"/>
+  </svg>;
+}
+
 function App() {
   const initial = screenFromHash(location.hash);
   const [screen, setScreen] = useState(initial);
@@ -87,8 +95,9 @@ function App() {
   const scene = useRef<HTMLDivElement>(null);
   const wipe = useRef<HTMLDivElement>(null);
   const titleFlight = useRef<HTMLSpanElement>(null);
+  const colorFlight = useRef<SVGSVGElement>(null);
   const titleHandoff = useRef(false);
-  const wedge = useRef<HTMLImageElement>(null);
+  const wedge = useRef<SVGSVGElement>(null);
   const menu = useRef<HTMLElement>(null);
   const sectionNav = useRef<HTMLElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -136,30 +145,65 @@ function App() {
       const rect = chosen.getBoundingClientRect();
       const style = getComputedStyle(chosen);
       const flight = titleFlight.current;
+      const colors = colorFlight.current!;
+      const pink = colors.querySelector('.sweep-pink')!;
+      const white = colors.querySelector('.sweep-white')!;
+      const red = colors.querySelector('.sweep-red')!;
       const suffix = flight.querySelector<HTMLElement>('.title-flight-suffix')!;
       const extra = flight.querySelector<HTMLElement>('.title-flight-extra')!;
       const rotation = Number(gsap.getProperty(chosen, 'rotation'));
       const scaleX = Number(gsap.getProperty(chosen, 'scaleX'));
       const elements = stage.current!.querySelector('.environment-elements');
       const destination = () => scene.current!.querySelector<HTMLElement>('.section-title-word')!;
-      gsap.set(flight, { visibility: 'visible', opacity: 1, fontSize: style.fontSize, lineHeight: style.lineHeight, letterSpacing: style.letterSpacing,
+      const heading = () => destination().parentElement!;
+      const sourceSweep = current.current === -1 ? wedge.current : null;
+      const sweepBounds = sourceSweep?.getBoundingClientRect() ?? rect;
+      gsap.set(colors, { visibility: 'visible', opacity: 1, xPercent: -50, yPercent: -50,
+        x: sweepBounds.left + sweepBounds.width / 2, y: sweepBounds.top + sweepBounds.height / 2,
+        width: sourceSweep ? gsap.getProperty(sourceSweep, 'width') : rect.width + 48,
+        height: sourceSweep ? gsap.getProperty(sourceSweep, 'height') : rect.height * 2,
+        rotation: sourceSweep ? gsap.getProperty(sourceSweep, 'rotation') : rotation, skewX: 0 });
+      // Start with the exact menu artwork, then let each color travel at its own depth.
+      gsap.set(colors.children, { clearProps: 'transform,opacity,fill', transformOrigin: '50% 50%' });
+      gsap.set(pink, { attr: { d: 'M0 193L625 0L468 157L0 193Z' } });
+      gsap.set(white, { attr: { d: 'M34 181L585 5L450 147L34 181Z' } });
+      gsap.set(red, { attr: { d: 'M0 193L348 94L326 132L0 193Z' } });
+      gsap.set(flight, { visibility: 'visible', opacity: 1, color: style.color,
+        '--ink-x': '0px', '--ink-y': '0px', '--ink-opacity': sourceSweep ? 1 : 0,
+        fontSize: style.fontSize, lineHeight: style.lineHeight, letterSpacing: style.letterSpacing,
         rotation, skewX: Number(gsap.getProperty(chosen, 'skewX')), scaleX, scaleY: Number(gsap.getProperty(chosen, 'scaleY')), xPercent: -50, yPercent: -50 });
       gsap.set(suffix, { opacity: 1, x: 0 });
       gsap.set(extra, { opacity: 0, x: -18, clipPath: 'inset(0 100% 0 0)' });
       const suffixOffset = suffix.offsetWidth * scaleX / 2;
-      gsap.set(flight, { '--banner-tail': `${suffix.offsetWidth}px`, '--banner-cut': 'polygon(0% 80%,100% 0%,92% 82%,3% 100%)',
+      gsap.set(flight, {
         x: rect.left + rect.width / 2 - Math.cos(rotation * Math.PI / 180) * suffixOffset,
         y: rect.top + rect.height / 2 - Math.sin(rotation * Math.PI / 180) * suffixOffset });
       gsap.set(chosen, { visibility: 'hidden' });
       if (current.current === -1) gsap.set(wedge.current, { visibility: 'hidden' });
-      // The title stays visible while the world passes behind it at different depths.
-      tl.to(scene.current, { x: -32, opacity: 0, duration: .28, ease: 'power2.in' }, 0)
+      tl.to(pink, { x: -55, y: 18, scaleX: 1.18, duration: .36, ease: 'power2.out' }, 0)
+        .to(white, { x: 25, y: -10, scaleX: 1.06, duration: .3, ease: 'power2.out' }, .03)
+        .to(red, { x: -110, y: 32, scaleX: 1.4, duration: .32, ease: 'power2.out' }, .06)
+        .to(flight, { '--ink-x': '18px', '--ink-y': '-6px', color: '#030712', duration: .3 }, .02)
+        .to(scene.current, { x: -32, opacity: 0, duration: .28, ease: 'power2.in' }, 0)
         .to(stage.current, { '--scene-travel': -1, duration: .3, ease: 'power2.in' }, 0)
         .to(elements, { opacity: 0, duration: .16 }, .14)
         .call(commit, [], .3)
         .set(stage.current, { '--scene-travel': 1 }, .3)
         .to(stage.current, { '--scene-travel': 0, duration: .85, ease: 'power3.out' }, .3)
         .to(elements, { opacity: 1, duration: .6, ease: 'power2.out' }, .3)
+        .to(colors, {
+          x: () => { const r = heading().getBoundingClientRect(); return r.left + r.width / 2; },
+          y: () => { const r = heading().getBoundingClientRect(); return r.top + r.height / 2; },
+          width: () => heading().offsetWidth + parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.4,
+          height: () => heading().offsetHeight,
+          rotation: -7, skewX: -8, duration: 1.04, ease: 'power3.inOut',
+        }, .3)
+        .to(white, { x: 0, y: 0, scaleX: 1, fill: '#f5fcff',
+          attr: { d: 'M0 55.9L625 0L575 176.3L18.75 215Z' }, duration: .86, ease: 'power3.inOut' }, .4)
+        .to(pink, { x: 0, y: () => 5 * 215 / heading().offsetHeight, scaleX: 1, fill: '#ff315c',
+          attr: { d: 'M0 55.9L625 0L575 176.3L18.75 215Z' }, duration: .86, ease: 'power3.inOut' }, .48)
+        .to(red, { x: 220, y: -45, scaleX: 1.7, opacity: 0, duration: .5, ease: 'power2.in' }, .38)
+        .to(flight, { '--ink-x': '85px', '--ink-y': '-24px', '--ink-opacity': 0, duration: .4, ease: 'power2.in' }, .32)
         .to(flight, {
           x: () => { const r = destination().getBoundingClientRect(); return r.left + r.width / 2; },
           y: () => { const r = destination().getBoundingClientRect(); return r.top + r.height / 2; },
@@ -167,23 +211,15 @@ function App() {
           lineHeight: () => getComputedStyle(destination()).lineHeight,
           letterSpacing: () => getComputedStyle(destination()).letterSpacing,
           rotation: -7, skewX: -8, scaleX: 1, scaleY: 1,
-          '--banner-cut': 'polygon(0% 26%,100% 0%,92% 82%,3% 100%)',
-          duration: .85, ease: 'power3.inOut',
-        }, .3)
+          duration: .84, ease: 'power3.inOut',
+        }, .34)
         .to(suffix, { opacity: 0, x: 12, duration: .2 }, .38)
-        .to(flight, {
-          '--banner-tail': () => {
-            const word = destination();
-            const heading = word.parentElement!;
-            const padding = getComputedStyle(heading);
-            return `${Math.max(0, heading.offsetWidth - word.offsetWidth - parseFloat(padding.paddingLeft) - parseFloat(padding.paddingRight))}px`;
-          }, duration: .4, ease: 'power3.inOut',
-        }, .65)
-        .to(extra, { opacity: 1, x: 0, clipPath: 'inset(0 0% 0 0)', duration: .4, ease: 'power3.out' }, .65)
+        .to(extra, { opacity: 1, x: 0, clipPath: 'inset(0 0% 0 0)', duration: .4, ease: 'power3.out' }, .76)
         .call(() => {
           gsap.set(destination().parentElement!.querySelectorAll('span'), { visibility: 'visible' });
           gsap.set(destination().parentElement, { '--title-banner-opacity': 1 });
           gsap.set(flight, { visibility: 'hidden' });
+          gsap.set(colors, { visibility: 'hidden' });
           gsap.set(stage.current, { '--scene-travel': 0 });
           gsap.set(elements, { clearProps: 'opacity' });
           gsap.set(chosen, { clearProps: 'visibility' });
@@ -338,7 +374,7 @@ function App() {
           <MenuEmblem selected={selected} reduced={reduced}/>
           <h1 className="sr-only">Lucky Ramadhan — Personal portfolio</h1>
           <nav className="main-menu" aria-label="Main menu" ref={menu}>
-            <img ref={wedge} className="selection-wedge" src="/assets/selection.svg" alt="" aria-hidden="true"/>
+            <SelectionSweep ref={wedge} className="selection-wedge"/>
             {sections.map((name, i) => <button key={name} data-index={i} className={`menu-button ${selected === i ? 'selected' : ''}`} aria-label={`Open ${name}`} onFocus={() => {if(!locked.current)setSelected(i);}} onPointerEnter={() => {if(!locked.current)setSelected(i);}} onClick={() => navigate(i)}><span data-label={name}>{name}</span></button>)}
           </nav>
           <p className="menu-description reveal" aria-live="polite"><span>{String(selected+1).padStart(2,'0')} /</span> {descriptions[selected]}</p>
@@ -358,7 +394,8 @@ function App() {
       </div>
       <footer className="controls"><div className="audio-controls"><button className="motion-control" aria-pressed={reduced} onClick={()=>{transition.current?.progress(1);setReduced(!reduced);}}>{reduced ? 'MOTION: REDUCED' : 'MOTION: FULL'}</button><button className="motion-control" aria-pressed={music} onClick={()=>setMusic(!music)}>{music ? 'MUSIC: ON' : 'MUSIC: OFF'}</button></div>{screen >= 0 && <nav ref={sectionNav} aria-label="Sections" className="section-nav">{sections.map((name,i)=><button key={name} aria-current={screen===i?'page':undefined} onClick={event=>navigate(i, false, event.currentTarget.querySelector<HTMLElement>('span') ?? undefined)}><span>{name}</span></button>)}</nav>}<div className="key-hints">{screen === WELCOME ? <span><kbd>↑</kbd><kbd>↓</kbd> Select <kbd>↵</kbd> Confirm</span> : screen < 0 ? <><button onClick={()=>navigate(WELCOME)}><kbd>Esc</kbd> Title</button><span className="move-hint"><kbd>↑</kbd><kbd>↓</kbd> Select</span><button onClick={()=>navigate(selected)}><kbd>↵</kbd> Confirm</button></> : <button onClick={()=>navigate(-1)}><kbd>Esc</kbd> Back</button>}</div></footer>
       <div className="transition-wipe" ref={wipe} aria-hidden="true"><span>MAKE YOUR CHOICE.</span></div>
-      <span className="section-title-flight" ref={titleFlight} aria-hidden="true">{selected === 3 ? 'SKILL' : sections[selected]}<span className="title-flight-suffix">{selected === 3 ? 'S' : ''}</span><span className="title-flight-extra">{selected === 0 ? ' ME' : selected === 3 ? ' TREE' : ''}</span></span>
+      <SelectionSweep ref={colorFlight} className="title-color-flight"/>
+      <span className="section-title-flight" ref={titleFlight} data-label={sections[selected]} aria-hidden="true">{selected === 3 ? 'SKILL' : sections[selected]}<span className="title-flight-suffix">{selected === 3 ? 'S' : ''}</span><span className="title-flight-extra">{selected === 0 ? ' ME' : selected === 3 ? ' TREE' : ''}</span></span>
     </div>
     <dialog ref={dialog} onClose={()=>setProject(null)} onClick={e=>{if(e.target===dialog.current)setProject(null);}} className="project-dialog">{project !== null && <><p className="eyebrow">PROJECT FILE / 0{project+1}</p><h2>{projects[project].name}</h2><p>{projects[project].detail}</p><p className="draft-note">Preview / final case study pending</p><button autoFocus onClick={()=>setProject(null)}><kbd>Esc</kbd> Close entry</button></>}</dialog>
     <dialog ref={configDialog} className="config-dialog" aria-labelledby="config-title"><p className="eyebrow">YOUR EXPERIENCE</p><h2 id="config-title">CONFIG</h2><label className="config-option"><span><strong>Reduced motion</strong><small>Keep transitions simple and pause ambient movement.</small></span><input type="checkbox" checked={reduced} onChange={e=>{transition.current?.progress(1);setReduced(e.target.checked);}}/></label><label className="config-option"><span><strong>Button sounds</strong><small>Play a short sound when a button is activated.</small></span><input type="checkbox" checked={sound} onChange={e=>setSound(e.target.checked)}/></label><label className="config-option"><span><strong>Soundtrack</strong><small>Blue Hour · Original JRPG-inspired instrumental</small></span><input type="checkbox" checked={music} onChange={e=>{musicUnlocked.current=true;setMusic(e.target.checked);}}/></label><label className="config-option music-volume"><span><strong>Music volume</strong><small>{Math.round(musicVolume*100)}%</small></span><input type="range" min="0" max="100" value={Math.round(musicVolume*100)} onChange={e=>setMusicVolume(Number(e.target.value)/100)}/></label><p className="config-help">Navigate with ↑ / ↓ or W / S. Press Enter to confirm, Escape to go back.</p><form method="dialog"><button>DONE <kbd>Esc</kbd></button></form></dialog>

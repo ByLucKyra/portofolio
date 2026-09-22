@@ -52,7 +52,7 @@
 .menu-button.selected span::after{opacity:1}
 .menu-button:focus-visible{outline:none}
 .menu-button:focus-visible span{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.1em}
-.selection-wedge{display:block;position:absolute;z-index:0;left:0;top:0;width:22rem;height:9rem;object-fit:fill;max-width:none;pointer-events:none;transform-origin:25% 65%;filter:drop-shadow(7px 7px 0 #ed4c8d30)}
+.selection-wedge{display:block;position:absolute;z-index:0;left:0;top:0;width:22rem;height:9rem;overflow:visible;max-width:none;pointer-events:none;transform-origin:25% 65%;filter:drop-shadow(7px 7px 0 #ed4c8d30)}
 .menu-description{margin:2.3rem 0 0 5%;min-height:2.6rem;font-size:.8rem;max-width:min(30rem,44vw)}
 .menu-description>span{margin-right:.65rem;color:#8aeeff}
 .identity{position:absolute;bottom:5.8rem;left:3vw;max-width:24vw;color:#eefaff}
@@ -408,7 +408,8 @@
 /* About: topic selection, conversation, and a character-profile dossier. */
 .section-title-word,.section-title-extra{display:inline-block}
 .section-title-flight{position:fixed;left:0;top:0;z-index:21;visibility:hidden;pointer-events:none;color:#030712;font:800 italic 4rem/1.1 'Barlow Condensed';letter-spacing:-.04em;white-space:nowrap}
-.section-title-flight::before{content:'';position:absolute;z-index:-1;inset:-.05rem calc(-1.5rem - var(--banner-tail,0px)) -.05rem -1.5rem;background:#f5fcff;border-bottom:5px solid #ff315c;clip-path:var(--banner-cut,polygon(0% 26%,100% 0%,92% 82%,3% 100%))}
+.title-color-flight{position:fixed;left:0;top:0;z-index:20;visibility:hidden;pointer-events:none;overflow:visible}
+.section-title-flight::after{content:attr(data-label);position:absolute;left:0;top:0;color:#ef281d;clip-path:polygon(0 66%,100% 43%,100% 73%,0 97%);transform:translate(var(--ink-x,0px),var(--ink-y,0px));opacity:var(--ink-opacity,0)}
 .title-flight-extra,.title-flight-suffix{position:absolute;left:100%;top:0;white-space:pre}
 .stage[data-screen=about] .environment-art{object-position:35% center}
 .stage[data-screen=about] .depth{background:linear-gradient(90deg,#02103022,#06132a11 35%,#020b24aa 68%,#020b24dd),linear-gradient(0deg,#02091fff,transparent 35%)}
@@ -531,4 +532,5 @@
 
 /* Shared destination banner for every main-menu title. */
 .stage[data-screen] .section-heading h1{position:relative;isolation:isolate;width:max-content;max-width:100%;padding:.05rem .8rem;font:800 italic clamp(2.2rem,5.5vw,6.2rem)/1.1 'Barlow Condensed';letter-spacing:-.04em;color:#030712;transform:rotate(-7deg) skewX(-8deg)}
-.stage[data-screen] .section-heading h1::before{content:'';position:absolute;inset:0 -.7rem;z-index:-1;background:#f5fcff;border-bottom:5px solid #ff315c;clip-path:polygon(0 26%,100% 0,92% 82%,3% 100%);opacity:var(--title-banner-opacity,1)}
+.stage[data-screen] .section-heading h1::before,.stage[data-screen] .section-heading h1::after{content:'';position:absolute;inset:0 -.7rem;z-index:-1;background:#f5fcff;border:0;clip-path:polygon(0 26%,100% 0,92% 82%,3% 100%);opacity:var(--title-banner-opacity,1)}
+.stage[data-screen] .section-heading h1::after{z-index:-2;background:#ff315c;transform:translateY(5px)}
