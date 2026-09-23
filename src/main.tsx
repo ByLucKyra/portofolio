@@ -22,8 +22,13 @@ import './style.css';
 
 const sectionArtwork = ['about-study', 'experience-journey', 'projects-workshop', 'skills-network', 'achievements-ascent', 'contact-signal'];
 
-function SelectionSweep({ className, ref }: { className: string; ref: React.Ref<SVGSVGElement> }) {
+function SelectionSweep({ className, ref, expanded = false }: { className: string; ref: React.Ref<SVGSVGElement>; expanded?: boolean }) {
   return <svg ref={ref} className={className} viewBox="0 0 625 215" preserveAspectRatio="none" aria-hidden="true">
+    {expanded && <>
+      <path className="sweep-navy" d="M0 193L625 0L468 157L0 193Z" fill="#030b26" opacity="0"/>
+      <path className="sweep-blue" d="M0 193L625 0L468 157L0 193Z" fill="#70b8ff" opacity="0"/>
+      <path className="sweep-cyan" d="M0 193L625 0L468 157L0 193Z" fill="#8aeeff" opacity="0"/>
+    </>}
     <path className="sweep-pink" d="M0 193L625 0L468 157L0 193Z" fill="#F02E61"/>
     <path className="sweep-white" d="M34 181L585 5L450 147L34 181Z" fill="#fff"/>
     <path className="sweep-red" d="M0 193L348 94L326 132L0 193Z" fill="#FF242E"/>
@@ -35,7 +40,6 @@ function App() {
   const [screen, setScreen] = useState(initial);
   const [selected, setSelected] = useState(Math.max(0, initial));
   const [busy, setBusy] = useState(false);
-  const [outgoingArtwork, setOutgoingArtwork] = useState<string | null>(null);
   const [reduced, setReduced] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [project, setProject] = useState<number | null>(null);
   const [savedScreen, setSavedScreen] = useState<number | null>(() => readSavedScreen(undefined));
@@ -98,6 +102,7 @@ function App() {
   const titleFlight = useRef<HTMLSpanElement>(null);
   const colorFlight = useRef<SVGSVGElement>(null);
   const titleHandoff = useRef(false);
+  const instantEntry = useRef(initial === WELCOME);
   const wedge = useRef<SVGSVGElement>(null);
   const menu = useRef<HTMLElement>(null);
   const sectionNav = useRef<HTMLElement>(null);
@@ -129,15 +134,19 @@ function App() {
     if (next !== WELCOME) preload(`/assets/${next < 0 ? 'menu-nexus' : sectionArtwork[next]}.png`, { as: 'image' });
     locked.current = true; setBusy(true);
     if (next >= 0) flushSync(() => setSelected(next));
-    const sourceArtwork = current.current < 0 ? 'menu-nexus' : sectionArtwork[current.current];
+    instantEntry.current = current.current === WELCOME || next === WELCOME;
     const commit = () => {
       if (!fromHistory) history.pushState(null, '', screenHash(next));
-      flushSync(() => { setProject(null); if (titleHandoff.current) setOutgoingArtwork(sourceArtwork); setScreen(next); });
+      flushSync(() => { setProject(null); setScreen(next); });
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
       if (stage.current) { stage.current.scrollTop = 0; stage.current.scrollLeft = 0; }
     };
     entrance.current?.kill();
-    if (reduced) { commit(); return; }
+    entrance.current = null;
+    transition.current?.kill();
+    transition.current = null;
+    titleHandoff.current = false;
+    if (reduced || instantEntry.current) { commit(); return; }
     const tl = gsap.timeline({ onComplete: finishNavigation }); transition.current = tl;
     const chosen = next >= 0 && !fromHistory ? source ?? (current.current === -1
       ? menu.current?.querySelector<HTMLElement>(`[data-index="${next}"] span`) : null) : null;
@@ -150,11 +159,13 @@ function App() {
       const pink = colors.querySelector('.sweep-pink')!;
       const white = colors.querySelector('.sweep-white')!;
       const red = colors.querySelector('.sweep-red')!;
+      const navy = colors.querySelector('.sweep-navy')!;
+      const blue = colors.querySelector('.sweep-blue')!;
+      const cyan = colors.querySelector('.sweep-cyan')!;
       const suffix = flight.querySelector<HTMLElement>('.title-flight-suffix')!;
       const extra = flight.querySelector<HTMLElement>('.title-flight-extra')!;
       const rotation = Number(gsap.getProperty(chosen, 'rotation'));
       const scaleX = Number(gsap.getProperty(chosen, 'scaleX'));
-      const elements = stage.current!.querySelector('.environment-elements');
       const destination = () => scene.current!.querySelector<HTMLElement>('.section-title-word')!;
       const heading = () => destination().parentElement!;
       const sourceSweep = current.current === -1 ? wedge.current : null;
@@ -164,8 +175,9 @@ function App() {
         width: sourceSweep ? gsap.getProperty(sourceSweep, 'width') : rect.width + 48,
         height: sourceSweep ? gsap.getProperty(sourceSweep, 'height') : rect.height * 2,
         rotation: sourceSweep ? gsap.getProperty(sourceSweep, 'rotation') : rotation, skewX: 0 });
-      // Start with the exact menu artwork, then let each color travel at its own depth.
+      // Expand the selected artwork into colored planes, then fold it into the page title.
       gsap.set(colors.children, { clearProps: 'transform,opacity,fill', transformOrigin: '50% 50%' });
+      gsap.set([navy, blue, cyan], { opacity: 0, attr: { d: 'M0 193L625 0L468 157L0 193Z' } });
       gsap.set(pink, { attr: { d: 'M0 193L625 0L468 157L0 193Z' } });
       gsap.set(white, { attr: { d: 'M34 181L585 5L450 147L34 181Z' } });
       gsap.set(red, { attr: { d: 'M0 193L348 94L326 132L0 193Z' } });
@@ -181,30 +193,46 @@ function App() {
         y: rect.top + rect.height / 2 - Math.sin(rotation * Math.PI / 180) * suffixOffset });
       gsap.set(chosen, { visibility: 'hidden' });
       if (current.current === -1) gsap.set(wedge.current, { visibility: 'hidden' });
-      tl.to(pink, { x: -55, y: 18, scaleX: 1.18, duration: .36, ease: 'power2.out' }, 0)
-        .to(white, { x: 25, y: -10, scaleX: 1.06, duration: .3, ease: 'power2.out' }, .03)
-        .to(red, { x: -110, y: 32, scaleX: 1.4, duration: .32, ease: 'power2.out' }, .06)
-        .to(flight, { '--ink-x': '18px', '--ink-y': '-6px', color: '#030712', duration: .3 }, .02)
-        .to(scene.current, { x: -32, opacity: 0, duration: .28, ease: 'power2.in' }, 0)
-        .to(stage.current, { '--scene-travel': -1, duration: .3, ease: 'power2.in' }, 0)
-        .to(elements, { opacity: 0, duration: .16 }, .14)
-        .call(commit, [], .3)
-        .set(stage.current, { '--scene-travel': 1 }, .3)
-        .to(stage.current, { '--scene-travel': 0, duration: .85, ease: 'power3.out' }, .3)
-        .to(elements, { opacity: 1, duration: .6, ease: 'power2.out' }, .3)
+      tl.to(pink, { x: -35, y: 12, duration: .12, ease: 'power2.out' }, 0)
+        .to(red, { x: 40, y: -12, duration: .12, ease: 'power2.out' }, .03)
+        .to(colors, {
+          x: () => innerWidth / 2, y: () => innerHeight / 2,
+          width: () => innerWidth + 4, height: () => innerHeight + 4,
+          rotation: 0, skewX: 0, duration: .5, ease: 'power3.inOut',
+        }, .1)
+        .to(navy, { opacity: 1, attr: { d: 'M0 0L625 0L625 215L0 215Z' }, duration: .48, ease: 'power3.inOut' }, .1)
+        .to(blue, { opacity: 1, attr: { d: 'M180 0L625 0L625 215L360 215Z' }, duration: .48, ease: 'power3.inOut' }, .12)
+        .to(cyan, { opacity: 1, attr: { d: 'M0 22L625 0L420 57L0 96Z' }, duration: .44, ease: 'power3.inOut' }, .14)
+        .to(pink, { x: 0, y: 0, attr: { d: 'M0 92L625 30L625 150L0 212Z' }, duration: .44, ease: 'power3.inOut' }, .12)
+        .to(white, { attr: { d: 'M0 105L625 45L625 120L0 180Z' }, duration: .44, ease: 'power3.inOut' }, .1)
+        .to(red, { x: 0, y: 0, attr: { d: 'M0 172L625 110L625 132L0 194Z' }, duration: .44, ease: 'power3.inOut' }, .16)
+        .to(flight, {
+          x: () => innerWidth / 2, y: () => innerHeight * .51,
+          fontSize: () => parseFloat(style.fontSize) * Math.min(innerWidth * .76 / rect.width, 1.25),
+          lineHeight: () => parseFloat(style.lineHeight) * Math.min(innerWidth * .76 / rect.width, 1.25),
+          rotation: () => -Math.atan(innerHeight * .28 / innerWidth) * 180 / Math.PI,
+          skewX: -8, scaleX: 1, scaleY: 1, color: '#030712',
+          '--ink-x': '32px', '--ink-y': '-10px', duration: .46, ease: 'power3.inOut',
+        }, .1)
+        .to(scene.current, { opacity: 0, duration: .32, ease: 'power2.in' }, .18)
+        // Switch content only after the navy plane covers every viewport edge.
+        .call(commit, [], .64)
         .to(colors, {
           x: () => { const r = heading().getBoundingClientRect(); return r.left + r.width / 2; },
           y: () => { const r = heading().getBoundingClientRect(); return r.top + r.height / 2; },
           width: () => heading().offsetWidth + parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.4,
           height: () => heading().offsetHeight,
-          rotation: -7, skewX: -8, duration: 1.04, ease: 'power3.inOut',
-        }, .3)
+          rotation: -7, skewX: -8, duration: .84, ease: 'power3.inOut',
+        }, .76)
         .to(white, { x: 0, y: 0, scaleX: 1, fill: '#f5fcff',
-          attr: { d: 'M0 55.9L625 0L575 176.3L18.75 215Z' }, duration: .86, ease: 'power3.inOut' }, .4)
+          attr: { d: 'M0 55.9L625 0L575 176.3L18.75 215Z' }, duration: .74, ease: 'power3.inOut' }, .76)
         .to(pink, { x: 0, y: () => 5 * 215 / heading().offsetHeight, scaleX: 1, fill: '#ff315c',
-          attr: { d: 'M0 55.9L625 0L575 176.3L18.75 215Z' }, duration: .86, ease: 'power3.inOut' }, .48)
-        .to(red, { x: 220, y: -45, scaleX: 1.7, opacity: 0, duration: .5, ease: 'power2.in' }, .38)
-        .to(flight, { '--ink-x': '85px', '--ink-y': '-24px', '--ink-opacity': 0, duration: .4, ease: 'power2.in' }, .32)
+          attr: { d: 'M0 55.9L625 0L575 176.3L18.75 215Z' }, duration: .78, ease: 'power3.inOut' }, .82)
+        .to(navy, { opacity: 0, attr: { d: 'M0 55.9L625 0L575 176.3L18.75 215Z' }, duration: .5, ease: 'power3.inOut' }, .76)
+        .to(blue, { x: 220, y: -65, opacity: 0, duration: .4, ease: 'power2.in' }, .8)
+        .to(cyan, { x: -220, y: 70, opacity: 0, duration: .4, ease: 'power2.in' }, .78)
+        .to(red, { x: 420, y: -40, opacity: 0, duration: .42, ease: 'power2.in' }, .84)
+        .to(flight, { '--ink-x': '85px', '--ink-y': '-24px', '--ink-opacity': 0, duration: .3, ease: 'power2.in' }, .62)
         .to(flight, {
           x: () => { const r = destination().getBoundingClientRect(); return r.left + r.width / 2; },
           y: () => { const r = destination().getBoundingClientRect(); return r.top + r.height / 2; },
@@ -212,20 +240,17 @@ function App() {
           lineHeight: () => getComputedStyle(destination()).lineHeight,
           letterSpacing: () => getComputedStyle(destination()).letterSpacing,
           rotation: -7, skewX: -8, scaleX: 1, scaleY: 1,
-          duration: .84, ease: 'power3.inOut',
-        }, .34)
-        .to(suffix, { opacity: 0, x: 12, duration: .2 }, .38)
-        .to(extra, { opacity: 1, x: 0, clipPath: 'inset(0 0% 0 0)', duration: .4, ease: 'power3.out' }, .76)
+          duration: .76, ease: 'power3.inOut',
+        }, .78)
+        .to(suffix, { opacity: 0, x: 12, duration: .2 }, .66)
+        .to(extra, { opacity: 1, x: 0, clipPath: 'inset(0 0% 0 0)', duration: .4, ease: 'power3.out' }, 1.14)
         .call(() => {
           gsap.set(destination().parentElement!.querySelectorAll('span'), { visibility: 'visible' });
           gsap.set(destination().parentElement, { '--title-banner-opacity': 1 });
           gsap.set(flight, { visibility: 'hidden' });
           gsap.set(colors, { visibility: 'hidden' });
-          gsap.set(stage.current, { '--scene-travel': 0 });
-          gsap.set(elements, { clearProps: 'opacity' });
           gsap.set(chosen, { clearProps: 'visibility' });
           if (wedge.current) gsap.set(wedge.current, { clearProps: 'visibility' });
-          setOutgoingArtwork(null);
           titleHandoff.current = false;
         });
       return;
@@ -241,25 +266,21 @@ function App() {
     const ctx = gsap.context(() => {
       gsap.set(scene.current, { x: 0, opacity: 1 });
       if (screen === WELCOME && stage.current) { stage.current.scrollTop = 0; stage.current.scrollLeft = 0; }
-      if (reduced) { gsap.set(wipe.current, { x: 0, xPercent: 130 }); finishNavigation(); return; }
-      const tl = gsap.timeline({ onComplete: finishNavigation }); entrance.current = tl;
-      if (screen === WELCOME) {
-        const mobile = window.matchMedia('(max-width:700px)').matches;
-        tl.from('.welcome-brand', { y: -40, opacity: 0, duration: 1.1, ease: 'power3.out' }, .15)
-          .fromTo('.welcome-button', { x: mobile ? 0 : 100, y: mobile ? 24 : 0, opacity: 0 }, { x: 0, y: 0, opacity: 1, duration: .7, stagger: .1, ease: 'power4.out', clearProps: 'transform,translate,rotate,scale' }, .4)
-          .from('.welcome-caption', { opacity: 0, duration: .7 }, .6);
-      } else {
-        tl.from('.screen-title', { x: -140, opacity: 0, duration: .7, ease: 'power4.out' }, .08)
-          .from(screen >= 0 && titleHandoff.current ? '.reveal:not(.section-heading)' : '.reveal', { y: 35, x: 38, opacity: 0, duration: .55, stagger: .055, ease: 'power3.out' }, .16);
-        if (screen >= 0 && titleHandoff.current) {
-          gsap.set('.section-title-word,.section-title-extra', { visibility: 'hidden' });
-          gsap.set('.section-heading h1', { '--title-banner-opacity': 0 });
-          tl.from('.section-body', { x: 55, opacity: 0, duration: .65, ease: 'power3.out' }, .18);
-          tl.from('.section-heading p', { y: 12, opacity: 0, duration: .35 }, .8);
-        }
-        if (screen === -1) tl.from('.menu-button', { x: 180, opacity: 0, duration: .6, stagger: .045, ease: 'power4.out' }, .13);
-        if (sectionNav.current) tl.from(sectionNav.current.children, { x: 45, y: 24, opacity: 0, duration: .55, stagger: .045, ease: 'power4.out' }, .2);
+      if (reduced || screen === WELCOME || instantEntry.current) {
+        gsap.set(wipe.current, { x: 0, xPercent: 130 });
+        finishNavigation(); return;
       }
+      const tl = gsap.timeline({ onComplete: finishNavigation }); entrance.current = tl;
+      tl.from('.screen-title', { x: -140, opacity: 0, duration: .7, ease: 'power4.out' }, .08)
+        .from(screen >= 0 && titleHandoff.current ? '.reveal:not(.section-heading)' : '.reveal', { y: 35, x: 38, opacity: 0, duration: .55, stagger: .055, ease: 'power3.out' }, .16);
+      if (screen >= 0 && titleHandoff.current) {
+        gsap.set('.section-title-word,.section-title-extra', { visibility: 'hidden' });
+        gsap.set('.section-heading h1', { '--title-banner-opacity': 0 });
+        tl.from('.section-body', { x: 55, opacity: 0, duration: .65, ease: 'power3.out' }, .18);
+        tl.from('.section-heading p', { y: 12, opacity: 0, duration: .35 }, .8);
+      }
+      if (screen === -1) tl.from('.menu-button', { x: 180, opacity: 0, duration: .6, stagger: .045, ease: 'power4.out' }, .13);
+      if (sectionNav.current) tl.from(sectionNav.current.children, { x: 45, y: 24, opacity: 0, duration: .55, stagger: .045, ease: 'power4.out' }, .2);
     }, scene);
     return () => ctx.revert();
   }, [screen, reduced]);
@@ -284,9 +305,9 @@ function App() {
   }, [reduced]);
 
   useEffect(() => {
-    if (reduced) return;
+    if (reduced || screen === WELCOME) return;
     return attachParallax(stage.current!);
-  }, [reduced]);
+  }, [reduced, screen === WELCOME]);
 
   useEffect(() => {
     const camera = gsap.to(stage.current, {
@@ -353,9 +374,9 @@ function App() {
   const active = screen < 0 ? selected : screen;
   const artwork = screen < 0 ? 'menu-nexus' : sectionArtwork[screen];
   return <div className={`app ${reduced ? 'reduced-motion' : ''}`} onClickCapture={buttonSound}>
-    <div className="stage" ref={stage} data-theme={active} data-screen={screen === WELCOME ? 'welcome' : screen < 0 ? 'menu' : sections[screen].toLowerCase()}>
+    <div className="stage" ref={stage} data-theme={active} data-instant-entry={instantEntry.current || undefined} data-screen={screen === WELCOME ? 'welcome' : screen < 0 ? 'menu' : sections[screen].toLowerCase()}>
       <div className="environment" aria-hidden="true">
-        <div className="environment-backdrop">{screen !== WELCOME && <img key={artwork} src={`/assets/${artwork}.png`} className="environment-art" alt="" decoding="async"/>}{outgoingArtwork && <img src={`/assets/${outgoingArtwork}.png`} className="environment-art environment-art-outgoing" alt=""/>}</div>
+        <div className="environment-backdrop">{screen !== WELCOME && <img key={artwork} src={`/assets/${artwork}.png`} className="environment-art" alt="" decoding="async"/>}</div>
         <div className="light-beam beam-one"/><div className="light-beam beam-two"/><div className="water-shimmer"/>
         {screen !== WELCOME && <EnvironmentElements theme={active}/>}
         <div className="depth"/>
@@ -396,7 +417,7 @@ function App() {
       </div>
       <footer className="controls"><div className="audio-controls"><button className="motion-control" aria-pressed={reduced} onClick={()=>{transition.current?.progress(1);setReduced(!reduced);}}>{reduced ? 'MOTION: REDUCED' : 'MOTION: FULL'}</button><button className="motion-control" aria-pressed={music} onClick={()=>setMusic(!music)}>{music ? 'MUSIC: ON' : 'MUSIC: OFF'}</button></div>{screen >= 0 && <nav ref={sectionNav} aria-label="Sections" className="section-nav">{sections.map((name,i)=><button key={name} aria-current={screen===i?'page':undefined} onClick={event=>navigate(i, false, event.currentTarget.querySelector<HTMLElement>('span') ?? undefined)}><span>{name}</span></button>)}</nav>}<div className="key-hints">{screen === WELCOME ? <span><kbd>↑</kbd><kbd>↓</kbd> Select <kbd>↵</kbd> Confirm</span> : screen < 0 ? <><button onClick={()=>navigate(WELCOME)}><kbd>Esc</kbd> Title</button><span className="move-hint"><kbd>↑</kbd><kbd>↓</kbd> Select</span><button onClick={()=>navigate(selected)}><kbd>↵</kbd> Confirm</button></> : <button onClick={()=>navigate(-1)}><kbd>Esc</kbd> Back</button>}</div></footer>
       <div className="transition-wipe" ref={wipe} aria-hidden="true"><span>MAKE YOUR CHOICE.</span></div>
-      <SelectionSweep ref={colorFlight} className="title-color-flight"/>
+      <SelectionSweep ref={colorFlight} className="title-color-flight" expanded/>
       <span className="section-title-flight" ref={titleFlight} data-label={sections[selected]} aria-hidden="true">{selected === 3 ? 'SKILL' : sections[selected]}<span className="title-flight-suffix">{selected === 3 ? 'S' : ''}</span><span className="title-flight-extra">{selected === 0 ? ' ME' : selected === 3 ? ' TREE' : ''}</span></span>
     </div>
     <dialog ref={dialog} onClose={()=>setProject(null)} onClick={e=>{if(e.target===dialog.current)setProject(null);}} className="project-dialog">{project !== null && <><p className="eyebrow">PROJECT FILE / 0{project+1}</p><h2>{projects[project].name}</h2><p>{projects[project].detail}</p><p className="draft-note">Preview / final case study pending</p><button autoFocus onClick={()=>setProject(null)}><kbd>Esc</kbd> Close entry</button></>}</dialog>

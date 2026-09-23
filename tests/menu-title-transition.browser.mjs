@@ -2,40 +2,51 @@
 // Repeat for ABOUT, EXPERIENCE, PROJECTS, SKILLS, ACHIEVEMENTS, CONTACT.
 export async function startTitleTransition(page, menuName) {
   await page.getByRole('button', { name: `Open ${menuName}`, exact: true }).press('Enter');
-  const frames = await page.evaluate(() => new Promise(resolve => {
+  const frames = await page.evaluate(menuName => new Promise(resolve => {
     const samples = [];
     const started = performance.now();
     const sample = () => {
       const stage = document.querySelector('.stage');
       const flight = document.querySelector('.section-title-flight');
       const wipe = document.querySelector('.transition-wipe').getBoundingClientRect();
-      const bounds = flight.getBoundingClientRect();
       const colors = document.querySelector('.title-color-flight');
-      const white = getComputedStyle(colors.querySelector('.sweep-white'));
-      const pink = getComputedStyle(colors.querySelector('.sweep-pink'));
-      const red = getComputedStyle(colors.querySelector('.sweep-red'));
+      const colorsVisible = getComputedStyle(colors).visibility === 'visible';
+      const points = [[1, 1], [innerWidth - 1, 1], [1, innerHeight - 1],
+        [innerWidth - 1, innerHeight - 1], [innerWidth / 2, innerHeight / 2]];
+      const layers = ['navy', 'blue', 'cyan', 'pink', 'white', 'red'].map(name => {
+        const path = colors.querySelector(`.sweep-${name}`);
+        const style = getComputedStyle(path);
+        const visible = colorsVisible && Number(style.opacity) > .1;
+        const inverse = path.getScreenCTM().inverse();
+        return { name, visible, transform: style.transform, shape: path.getAttribute('d'),
+          covers: visible && Number(style.opacity) >= .99 && points.every(([x, y]) => path.isPointInFill(new DOMPoint(x, y).matrixTransform(inverse))) };
+      });
       const ink = getComputedStyle(flight, '::after');
       const ready = document.querySelector('.scene').getAttribute('aria-busy') === 'false';
+      // A second activation must not replace the category while its colors are flying.
+      if (!ready && !samples.length) {
+        [...document.querySelectorAll('.menu-button')].find(button => button.getAttribute('aria-label') !== `Open ${menuName}`)?.click();
+      }
       samples.push({
-        ready,
+        ready, screen: stage.dataset.screen,
         flying: getComputedStyle(flight).visibility === 'visible',
         travel: parseFloat(getComputedStyle(stage).getPropertyValue('--scene-travel')) || 0,
         wipeVisible: wipe.left < innerWidth && wipe.right > 0 && wipe.top < innerHeight && wipe.bottom > 0,
-        titleArea: bounds.width * bounds.height / (innerWidth * innerHeight),
-        colorsVisible: getComputedStyle(colors).visibility === 'visible',
-        white: white.transform, pink: pink.transform, red: red.transform,
-        redOpacity: Number(red.opacity), ink: ink.transform, inkOpacity: Number(ink.opacity),
+        colorsVisible, layers, ink: ink.transform, inkOpacity: Number(ink.opacity),
       });
       if (ready || performance.now() - started > 3500) resolve(samples);
       else requestAnimationFrame(sample);
     };
     sample();
-  }));
-  if (!frames.some(frame => frame.travel < -.01) || !frames.some(frame => frame.travel > .01) ||
-      frames.some(frame => frame.wipeVisible || (frame.flying && (frame.ready || frame.titleArea > .45))) ||
-      !frames.some(frame => frame.colorsVisible && frame.white !== frame.pink && frame.pink !== frame.red && frame.redOpacity > .1) ||
+  }), menuName);
+  if (!frames.some(frame => frame.layers.some(layer => layer.covers)) ||
+      !frames.some(frame => frame.layers.every(layer => layer.visible)) ||
+      frames.some(frame => frame.wipeVisible || Math.abs(frame.travel) > .001 || ((frame.flying || frame.colorsVisible) && frame.ready)) ||
+      frames[0].layers.some(({ name }) => new Set(frames.filter(frame => frame.colorsVisible)
+        .map(frame => { const layer = frame.layers.find(layer => layer.name === name); return `${layer.transform}/${layer.shape}`; })).size < 2) ||
       !frames.some(frame => frame.inkOpacity > .1 && frame.ink !== 'none' && frame.ink !== 'matrix(1, 0, 0, 1, 0, 0)') ||
-      !frames.at(-1).ready) throw new Error(`Category motion failed: ${JSON.stringify(frames)}`);
+      !frames.find(frame => frame.screen === menuName.toLowerCase())?.layers.some(layer => layer.covers) ||
+      !frames.at(-1).ready || frames.at(-1).screen !== menuName.toLowerCase()) throw new Error(`Category motion failed: ${JSON.stringify(frames)}`);
   return frames;
 }
 
@@ -58,6 +69,7 @@ export async function finishTitleTransition(page, menuName) {
       bannerVisible: getComputedStyle(word.parentElement, '::before').opacity === '1',
       bannerExpanded: parseFloat(getComputedStyle(colors).width) >= word.parentElement.offsetWidth,
       colorsHidden: getComputedStyle(colors).visibility === 'hidden',
+      depthColorsHidden: ['navy', 'blue', 'cyan'].every(name => getComputedStyle(colors.querySelector(`.sweep-${name}`)).opacity === '0'),
       redHidden: getComputedStyle(colors.querySelector('.sweep-red')).opacity === '0',
       inkHidden: getComputedStyle(flight, '::after').opacity === '0',
       colorDistance: Math.hypot((banner.left + banner.right - plates.left - plates.right) / 2,
@@ -72,7 +84,7 @@ export async function finishTitleTransition(page, menuName) {
   const heading = menuName === 'ABOUT' ? 'ABOUT ME' : menuName === 'SKILLS' ? 'SKILL TREE' : menuName;
   if (!state.ready || state.heading !== heading || !state.wordVisible || !state.extraVisible ||
       !state.bannerVisible || !state.bannerExpanded || !state.flightHidden || !state.travelReset ||
-      !state.oldArtworkRemoved || !state.colorsHidden || !state.redHidden || !state.inkHidden ||
+      !state.oldArtworkRemoved || !state.colorsHidden || !state.depthColorsHidden || !state.redHidden || !state.inkHidden ||
       state.distance > 2 || state.colorDistance > 2) throw new Error(JSON.stringify(state));
   return state;
 }

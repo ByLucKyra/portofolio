@@ -3,14 +3,12 @@
 .audio-controls{display:flex;flex-wrap:wrap;gap:.4rem 1rem;align-items:center}.audio-controls button{min-height:44px}.config-option.music-volume input{width:40%;height:44px}
 *{box-sizing:border-box}html,body,#root{margin:0;min-height:100%;background:#030b26}body{overflow-x:hidden}button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}button:focus-visible,a:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}
 .app{min-height:100dvh;position:relative;background:#030b26}
-.stage{--view-x:0;--view-y:0;--focus-x:0;--focus-y:0;--scene-travel:0;--scroll-shift:0px;--depth-scale:1;--art-opacity:.7;position:relative;min-height:100dvh;overflow:hidden}
+.stage{--view-x:0;--view-y:0;--focus-x:0;--focus-y:0;--scroll-shift:0px;--depth-scale:1;--art-opacity:.7;position:relative;min-height:100dvh;overflow:hidden}
 .environment,.environment-backdrop,.environment-art{position:absolute;inset:0}
 .environment{background:#030b26;isolation:isolate;pointer-events:none}
 .environment-art{width:100%;height:100%;object-fit:cover;opacity:var(--art-opacity);animation:art-reveal .8s ease-out both}
 .environment-backdrop{inset:-5rem -5% auto;height:max(120svh,60rem);z-index:-1;mask-image:linear-gradient(#000 75%,transparent);transform:translate3d(calc((var(--view-x)*-10px + var(--focus-x)*-8px)*var(--depth-scale)),calc((var(--view-y)*-8px + var(--focus-y)*-12px + var(--scroll-shift)*.06)*var(--depth-scale)),0)}
-.environment-backdrop{translate:calc(var(--scene-travel,0)*18px*var(--depth-scale)) 0;scale:calc(1 + var(--scene-travel,0)*.025)}
-.environment-art-outgoing{animation:art-depart .75s ease-in-out both}
-@keyframes art-depart{from{opacity:.55}to{opacity:0}}
+.stage[data-instant-entry] .environment-art,.stage[data-instant-entry] .element-architecture{animation:none}
 .light-beam{position:absolute;top:-15%;height:150%;width:18%;background:linear-gradient(90deg,transparent,#7beffc55,transparent);transform:skewX(-18deg);filter:blur(18px);opacity:.2}.beam-one{left:20%}.beam-two{left:62%}
 .water-shimmer{position:absolute;inset:60% 0 0;background:linear-gradient(180deg,transparent,#020a27cc),repeating-linear-gradient(0deg,transparent 0 14px,#72e9fa12 15px 16px);opacity:.2}
 .depth{position:absolute;inset:0;background:linear-gradient(90deg,#020b2699,#020b2633 65%),linear-gradient(0deg,#030b26,transparent 65%)}
@@ -159,11 +157,10 @@
   .journey-notes{padding:.6rem 1rem;flex-direction:column}
 }
 
-/* Title screen: the classroom moves behind independent student cutouts and live UI. */
+/* Title screen: a static classroom with independently hoverable student cutouts. */
 .stage[data-screen=welcome]{min-height:100svh;background:#061139}
 .stage[data-screen=welcome] .scene{height:100svh;min-height:720px;padding:0}
-.stage[data-screen=welcome] .environment{background:#061139}
-.stage[data-screen=welcome] .environment::before{content:'';position:absolute;inset:-1.5rem;background:url('/assets/welcome-classroom.png') center/cover no-repeat;transform:translate3d(calc(var(--view-x)*-7px),calc(var(--view-y)*-5px),0)}
+.stage[data-screen=welcome] .environment{background:#061139 url('/assets/welcome-classroom.png') center/cover no-repeat}
 .stage[data-screen=welcome] .environment-backdrop{display:none}
 .stage[data-screen=welcome] .depth{background:linear-gradient(90deg,#06133108 25%,#020b2855 60%,#020a2bb8 100%),linear-gradient(0deg,#030b36aa,transparent 35%)}
 .stage[data-screen=welcome] .water-shimmer{inset:0;background:linear-gradient(110deg,#57e8ff18,transparent 45%);animation:welcome-light 9s ease-in-out infinite alternate;opacity:.65}
@@ -207,14 +204,12 @@
 .config-dialog form{text-align:right}.config-dialog form button{min-height:44px;font-weight:500}.config-dialog kbd{margin-left:.5rem}
 .reduced-motion .welcome-button,.reduced-motion .welcome-button::before{transition:none}
 .reduced-motion .stage[data-screen=welcome] .water-shimmer{animation:none}
-.reduced-motion .stage[data-screen=welcome] .environment::before{transform:none}
-@media(prefers-reduced-motion:reduce){.stage[data-screen=welcome] .environment::before{transform:none}}
 @keyframes welcome-light{from{transform:translateX(-4%);opacity:.35}to{transform:translateX(4%);opacity:.75}}
 @media(min-width:701px) and (max-height:750px){.stage[data-screen=welcome] .scene{min-height:620px}.welcome-brand{width:27%;right:11%;top:4%}.welcome-monogram{font-size:8.5rem}.welcome-brand h1{font-size:2.7rem}.welcome-edition{font-size:1.8rem}.welcome-menu{bottom:12%}.welcome-button{font-size:3.8rem;min-height:65px}}
 @media(max-width:700px){
   .stage[data-screen=welcome]{display:flex;flex-direction:column;min-height:100svh}
   .stage[data-screen=welcome] .scene{display:flex;flex:1;height:auto;min-height:0;padding:max(1.5rem,env(safe-area-inset-top)) max(1.5rem,env(safe-area-inset-right)) 0 max(1.5rem,env(safe-area-inset-left))}
-  .stage[data-screen=welcome] .environment::before{background-position:44% center}
+  .stage[data-screen=welcome] .environment{background-position:44% center}
   .stage[data-screen=welcome] .depth{background:linear-gradient(180deg,#030d3466,#020c3255 35%,#020925ee)}
   .welcome-content{position:relative;inset:auto;display:flex;flex-direction:column;gap:clamp(1rem,3svh,1.7rem);width:100%;min-width:0;padding-top:.5rem}
   .welcome-brand{position:relative;inset:auto;width:100%;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:.6rem .9rem;transform:rotate(-3deg)}
